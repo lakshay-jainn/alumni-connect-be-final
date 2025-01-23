@@ -72,15 +72,16 @@ export async function handleUserLogin(req, res) {
     const isPasswordvalid = compare(password , user.password);
 
     if(!isPasswordvalid){
-      return res.status.status(404).json({message: "Incorrect password"});
+      return res.status(404).json({message: "Incorrect password"});
     }
 
     const token = setUser(user);
 
+    // res.json({token}) // if we use header 
     res.cookie("authToken", token, {
       httpOnly: true,
       secure: false, // Set to true in production with HTTPS
-      // sameSite: "strict",
+      sameSite: "strict",
       maxAge: 3600000, // 1 hour
     });
     res.send(true);

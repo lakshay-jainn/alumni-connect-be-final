@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const SECRET = "pagalpanda123";
+import { JWT_PASSWORD } from "../src/config.js";
 
 export function setUser(user) {
   // Full user object in payload after reduce the payload
@@ -11,13 +11,13 @@ export function setUser(user) {
     id: user.id,
     email: user.email,
   };
-  return jwt.sign(payload, SECRET);
+  return jwt.sign(payload, JWT_PASSWORD);
 }
 
 export function getUser(token) {
   if (!token) return null;
   try {
-    return jwt.verify(token, SECRET);
+    return jwt.verify(token, JWT_PASSWORD);
   } catch (e) {
     return null;
   }
