@@ -20,7 +20,6 @@ model User {
   password       String
   role           ROLE            @default(STUDENT)
   created_at     DateTime        @default(now())
-  updated_at     DateTime        @updatedAt
   studentProfile StudentProfile? //1o1 with StudentProfile
   alumniProfile  AlumniProfile? // 101 with alumni profile
 }
@@ -32,26 +31,26 @@ enum ROLE {
 }
 
 model StudentProfile {
-  id           String   @id @default(uuid())
-  name         String
-  DOB          DateTime
-  course       String
+  name         String   @default("")
+  DOB          String   @default("")
+  course       String   @default("")
   skills       String[]
   internships  String[]
   urls         String[]
-  batch        String
+  batch        String   @default("")
   profileImage String   @default("https://ibb.co/5W6TpnY")
-  userId       String   @unique
+  userId       String   @unique @id
   user         User     @relation(fields: [userId], references: [id])
 }
 
 model AlumniProfile {
-  name         String
-  profileImage String  @default("https://ibb.co/5W6TpnY")
-  batch        String
-  course       String
-  jobTitle     String?
-  company      String?
-  userId       String  @unique
-  user         User    @relation(fields: [userId], references: [id])
+  name         String @default("")
+  DOB          String @default("")
+  course       String @default("")
+  profileImage String @default("https://ibb.co/5W6TpnY")
+  batch        String @default("")
+  jobTitle     String @default("")
+  company      String @default("")
+  userId       String @unique @id
+  user         User   @relation(fields: [userId], references: [id])
 }

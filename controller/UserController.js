@@ -73,27 +73,7 @@ export async function handleUserLogin(req, res) {
     res.status(200).json({token})
     
   } catch (error) {
-    res.send(500).json({message: "Something went wrong"})
+    res.status(500).json({message: "Something went wrong"})
   }
 }
 
-export async function handleUserLogout(req, res) {
-  try {
-    res.clearCookie("authToken", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-    });
-    res.status(200).json({
-      success: true,
-      message: "User logged out successfully",
-    });
-  } catch (error) {
-    console.log("Error during logout:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to log out",
-      error: error,
-    });
-  }
-}

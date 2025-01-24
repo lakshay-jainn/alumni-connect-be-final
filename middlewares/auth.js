@@ -28,7 +28,7 @@ export function checkForAuthentication(req, res, next) {
 
 
 // restict to array of roles
-export function restrictToOnly(...roles  ) {
+export function restrictToOnly(...roles) {
   return function (req, res, next) {
     if (!req.user) {
       return null;
