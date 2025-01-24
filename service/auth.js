@@ -9,9 +9,11 @@ export function setUser(user) {
   }
   const payload = {
     id: user.id,
-    email: user.email,
+    role: user.role
   };
-  return jwt.sign(payload, JWT_PASSWORD);
+  return jwt.sign(payload, JWT_PASSWORD ,{
+    expiresIn: "1h"
+  });
 }
 
 export function getUser(token) {

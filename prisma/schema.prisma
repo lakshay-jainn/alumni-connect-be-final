@@ -14,10 +14,44 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(uuid())
-  username   String   @unique
-  email      String   @unique
-  password   String
-  isAlumni   Boolean  @default(true)
-  created_at DateTime @default(now())
+  id             String          @id @default(uuid())
+  username       String          @unique
+  email          String          @unique
+  password       String
+  role           ROLE            @default(STUDENT)
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  studentProfile StudentProfile? //1o1 with StudentProfile
+  alumniProfile  AlumniProfile? // 101 with alumni profile
+}
+
+enum ROLE {
+  ADMIN
+  STUDENT
+  ALUMNI
+}
+
+model StudentProfile {
+  id           String   @id @default(uuid())
+  name         String
+  DOB          DateTime
+  course       String
+  skills       String[]
+  internships  String[]
+  urls         String[]
+  batch        String
+  profileImage String   @default("https://ibb.co/5W6TpnY")
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model AlumniProfile {
+  name         String
+  profileImage String  @default("https://ibb.co/5W6TpnY")
+  batch        String
+  course       String
+  jobTitle     String?
+  company      String?
+  userId       String  @unique
+  user         User    @relation(fields: [userId], references: [id])
 }

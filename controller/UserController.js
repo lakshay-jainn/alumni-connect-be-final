@@ -4,21 +4,18 @@ import { compare, hash } from "bcrypt";
 
 export async function handleUserSignup(req, res) {
   const { username, email, password } = req.body;
-
   try {
     const exsistingUserByEmail = await prisma.user.findUnique({
       where: {
         email: email,
       },
     });
-
     if (exsistingUserByEmail) {
       return res.json({
         user: null,
-        message: "User exists same email",
+        message: "User exists with same email",
       });
     }
-
     const exsistingUserByUsername = await prisma.user.findUnique({
       where: {
         username: username,
@@ -31,8 +28,6 @@ export async function handleUserSignup(req, res) {
         message: "User exists with the same username",
       });
     }
-
-
     const hashedPassword = await hash(password, 12);
 
     const user = await prisma.user.create({
@@ -48,17 +43,16 @@ export async function handleUserSignup(req, res) {
       secure: false, // Set to true in production with HTTPS
       maxAge: 3600000, // 1 hour
     });
-    res.send("Data inserted");
+    res.json({ message: "User succesfully registered" });
   } catch (error) {
     console.log(error);
-    res.send("not worked");
+    res.send("");
   }
 }
 
 export async function handleUserLogin(req, res) {
   const { email, password } = req.body;
   //validate user like password length and any other thing
-
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -69,23 +63,37 @@ export async function handleUserLogin(req, res) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const isPasswordvalid = compare(password , user.password);
+    const isPasswordvalid = await compare(password, user.password);
 
-    if(!isPasswordvalid){
-      return res.status(404).json({message: "Incorrect password"});
+    if (!isPasswordvalid) {
+      return res.status(400).json({ message: "Incorrect password" });
     }
-
     const token = setUser(user);
 
-    // res.json({token}) // if we use header 
-    res.cookie("authToken", token, {
-      httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
-      sameSite: "strict",
-      maxAge: 3600000, // 1 hour
-    });
-    res.send(true);
+    res.status(200).json({token})
+    
   } catch (error) {
-    console.log("Error while query", error);
+    res.send(500).json({message: "Something went wrong"})
+  }
+}
+
+export async function handleUserLogout(req, res) {
+  try {
+    res.clearCookie("authToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
+    res.status(200).json({
+      success: true,
+      message: "User logged out successfully",
+    });
+  } catch (error) {
+    console.log("Error during logout:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to log out",
+      error: error,
+    });
   }
 }

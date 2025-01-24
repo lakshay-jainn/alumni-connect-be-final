@@ -1,27 +1,39 @@
 import { getUser } from "../service/auth.js";
 
 export function checkForAuthentication(req, res, next) {
-  const tokenCookie = req.cookies?.authToken;
-  req.user = null;
+  let token ;
+  let authHeader = req.headers.Authorization || req.headers.authorization;
 
-  if (!tokenCookie) {
-    return next();
+  if(authHeader && authHeader.startsWith("Bearer")){
+    token = authHeader.split(" ")[1]
+    if(!token){
+      return res.status(401).json({message: "NO token, authorization denied"})
+    }
   }
-
-  const token = tokenCookie;
-  const user = getUser(token);
-  req.user = user;
-  return next();
+  else {
+    return res.status(401).json({message: 'NO Token , authorization denied'})
+  }
+  try {
+    const decode = getUser(token);
+    if(decode === null){
+      return res.json({message: "Invalid token"})
+    }
+    req.user = decode;
+    console.log("The decoded user is : " , req.user)
+    return next();
+  } catch (error) {
+    res.status(400).json({message: "Token is not valid"})
+  } 
 }
 
+
 // restict to array of roles
-export function restrictToOnly(roles = []) {
+export function restrictToOnly(...roles  ) {
   return function (req, res, next) {
     if (!req.user) {
       return null;
     }
-    if (!roles.includes(req.user.role)) return res.end("UnAuthorised");
-
+    if (!roles.includes(req.user.role)) return res.status(403).json({message:"Unauthorised"});
     return next();
   };
 }
