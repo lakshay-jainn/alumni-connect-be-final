@@ -1,5 +1,5 @@
 import { prisma } from "../libs/prisma.js";
-    export async function listAllAlumni(req, res) {
+    export async function listAllAlumniController(req, res) {
         try {
           const alumniProfiles = await prisma.alumniProfile.findMany({
             // include: {

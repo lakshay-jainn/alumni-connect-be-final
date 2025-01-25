@@ -1,8 +1,8 @@
 import { prisma } from "../libs/prisma.js";
-import { setUser } from "../service/auth.js";
+import { setUser } from "../services/auth.js";
 import { compare, hash } from "bcrypt";
 
-export async function handleUserSignup(req, res) {
+export async function handleUserSignupController(req, res) {
   const { username, email, password , isAlumni } = req.body;
   try {
     const exsistingUserByEmail = await prisma.user.findUnique({
@@ -47,7 +47,7 @@ export async function handleUserSignup(req, res) {
   }
 }
 
-export async function handleUserLogin(req, res) {
+export async function handleUserLoginController(req, res) {
   const { email, password } = req.body;
   //validate user like password length and any other thing
   try {

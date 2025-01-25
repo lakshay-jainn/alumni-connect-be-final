@@ -1,13 +1,13 @@
 import {Router} from "express"
-import { showProfileAlumniorStudent , createUpdateAlumniStudentProfile } from "../../../controller/UpdateCreateController.js"
-import { checkForAuthentication } from "../../../middlewares/auth.js"
-import { listAllAlumni } from "../../../controller/ListingController.js"
+import { showProfileAlumniStudentController , createUpdateAlumniStudentProfileController } from "../../../controller/UpdateCreateController.js"
+// import { checkForAuthentication } from "../../../middlewares/auth.js"
+import { listAllAlumniController } from "../../../controller/ListingController.js"
 const router = Router()
 
-router.get("/profile-alumni-student" ,checkForAuthentication, showProfileAlumniorStudent )
-router.post("/create-update-profile-alumni-student" , checkForAuthentication , createUpdateAlumniStudentProfile)
+router.get("/profile-alumni-student" , showProfileAlumniStudentController )
+router.post("/create-update-profile-alumni-student" , createUpdateAlumniStudentProfileController)
 // router.patch("/update-profile-alumni-student" , checkForAuthentication , updateAlumniStudentProfile)
 
-router.get("/showallalumni",checkForAuthentication , listAllAlumni )
+router.get("/showallalumni" , listAllAlumniController )
 
 export default router;

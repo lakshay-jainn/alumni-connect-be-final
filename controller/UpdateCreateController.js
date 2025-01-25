@@ -1,6 +1,6 @@
 import { prisma } from "../libs/prisma.js";
 
-export async function showProfileAlumniorStudent(req, res) {
+export async function showProfileAlumniStudentController(req, res) {
   const userId = req.user.id;
   const role = req.user.role;
 
@@ -49,7 +49,7 @@ export async function showProfileAlumniorStudent(req, res) {
   }
 }
 
-export async function createUpdateAlumniStudentProfile (req,res){
+export async function createUpdateAlumniStudentProfileController (req,res){
 
   
   const userId = req.user.id;

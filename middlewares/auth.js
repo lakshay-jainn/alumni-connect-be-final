@@ -1,4 +1,4 @@
-import { getUser } from "../service/auth.js";
+import { getUser } from "../services/auth.js";
 
 export function checkForAuthentication(req, res, next) {
   let token ;
