@@ -5,8 +5,6 @@ import { listAllAlumni } from "../../../controller/ListingController.js";
 
 const router = Router()
 
-router.get("/showallalumni" , listAllAlumni )
-
 // router.post("/create-alumni" , createAlumniProfile )
 router.post("/update-alumni" ,  )
 

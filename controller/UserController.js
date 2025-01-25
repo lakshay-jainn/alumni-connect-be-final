@@ -3,7 +3,7 @@ import { setUser } from "../service/auth.js";
 import { compare, hash } from "bcrypt";
 
 export async function handleUserSignup(req, res) {
-  const { username, email, password } = req.body;
+  const { username, email, password , isAlumni } = req.body;
   try {
     const exsistingUserByEmail = await prisma.user.findUnique({
       where: {
@@ -22,6 +22,7 @@ export async function handleUserSignup(req, res) {
       },
     });
 
+    
     if (exsistingUserByUsername) {
       return res.json({
         user: null,
@@ -35,15 +36,11 @@ export async function handleUserSignup(req, res) {
         username: username,
         email: email,
         password: hashedPassword,
+        role: isAlumni? "ALUMNI" : "STUDENT",
       },
     });
     const token = setUser(user);
-    res.cookie("authToken", token, {
-      httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
-      maxAge: 3600000, // 1 hour
-    });
-    res.json({ message: "User succesfully registered" });
+    res.json({token, message: "User succesfully registered" });
   } catch (error) {
     console.log(error);
     res.send("");

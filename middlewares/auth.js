@@ -18,8 +18,11 @@ export function checkForAuthentication(req, res, next) {
     if(decode === null){
       return res.json({message: "Invalid token"})
     }
-    req.user = decode;
-    console.log("The decoded user is : " , req.user)
+    
+    // removing password security reasons
+    const {password, ...userWithoutPassword} = decode
+    req.user = userWithoutPassword;
+    // console.log("The decoded user is : " , req.user)
     return next();
   } catch (error) {
     res.status(400).json({message: "Token is not valid"})
