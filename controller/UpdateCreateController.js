@@ -16,17 +16,17 @@ export async function showProfileAlumniStudentController(req, res) {
     });
 
     if (!user) {
-      return res.json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     let profile;
 
     if (user.role === "STUDENT" && user.studentProfile) {
-      profile = user.studentProfile;
+      profile = {...user.studentProfile,email:user.email,username:user.username};
     } else if (user.role === "ALUMNI" && user.alumniProfile) {
-      profile = user.alumniProfile;
+      profile = {...user.alumniProfile,email:user.email,username:user.username};
     } else {
-      return res.json({ message: "Profile not found for the given role" });
+      return res.status(404).json({ message: "Profile not found for the given role" });
     }
     // Need it later when we need who requested the data
 
@@ -40,7 +40,7 @@ export async function showProfileAlumniStudentController(req, res) {
     
     // console.log("Profile.. " ,profile);
     // console.log("userinfo.. " , userInfo)
-    res.json({
+    res.status(200).json({
         // user:userInfo,
         profile
     })
@@ -53,10 +53,12 @@ export async function createUpdateAlumniStudentProfileController (req,res){
 
   
   const userId = req.user.id;
+  console.log(userId)
   const role = req.user.role;
-  const {...createData} = req.body;
-  
-  if(!createData) {
+  console.log(role)
+  const { email, username, ...updateData } = req.body;
+
+  if(!req.body) {
     return res.json({message: "Please enter details"})
   }
   try{
@@ -70,35 +72,39 @@ export async function createUpdateAlumniStudentProfileController (req,res){
       return res.json({message:"User not found"}).status(404)
     }
 
+      
+    if (username || email){
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          ...(username !== undefined && { username: username }),
+          ...(email !== undefined && { email: email }),
+        },
+      });
+    }
+
     let updatedProfile;
 
     if(role === "STUDENT"){
-      updatedProfile = await prisma.studentProfile.upsert({
+      updatedProfile = await prisma.studentProfile.update({
         where: {
           userId
         },
-        update: {
-          ...createData
+        data: {
+          ...updateData
         },
-        create:{
-          userId,
-          ...createData
-        }
       })
       console.log(updatedProfile)
     }
     else if (role === "ALUMNI"){
-      updatedProfile = await prisma.alumniProfile.upsert({
+      updatedProfile = await prisma.alumniProfile.update({
         where: {
           userId
         },
-        update: {
-          ...createData
+        data: {
+          ...updateData
         },
-        create: {
-          userId,
-          ...createData
-        }
+      
       })
     }
     else {
@@ -106,6 +112,7 @@ export async function createUpdateAlumniStudentProfileController (req,res){
     }
   res.json({message: "Profile updated succesfully" , profile : updatedProfile}).status(200)
   }catch(e){
+    console.log(e.message)
     res.json({message: "Failed to update profile"}).status(401)
   }
 }

@@ -39,6 +39,23 @@ export async function handleUserSignupController(req, res) {
         role: isAlumni? "ALUMNI" : "STUDENT",
       },
     });
+
+    if (user.role === "ALUMNI"){
+      await prisma.alumniProfile.create({
+        data:{
+          userId:user.id,
+        }
+      })
+    }
+
+    else if(user.role === "STUDENT"){
+      await prisma.studentProfile.create({
+        data:{
+          userId:user.id,
+        }
+      })
+    }
+
     const token = setUser(user);
     res.json({token, message: "User succesfully registered" });
   } catch (error) {
