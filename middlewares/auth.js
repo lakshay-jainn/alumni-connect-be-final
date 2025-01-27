@@ -5,14 +5,15 @@ export function checkForAuthentication(req, res, next) {
   let authHeader = req.headers.Authorization || req.headers.authorization;
 
   if(authHeader && authHeader.startsWith("Bearer")){
+    
     token = authHeader.split(" ")[1]
-    console.log(token)
+ 
     if(!token){
       return res.status(401).json({message: "NO token, authorization denied"})
     }
   }
   else {
-    return res.status(401).json({message: 'NO Token , authorization denied'})
+    return res.status(401).json({message: 'Invalid token format'})
   }
   try {
     const decode = getUser(token);

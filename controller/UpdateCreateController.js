@@ -53,10 +53,12 @@ export async function createUpdateAlumniStudentProfileController (req,res){
 
   
   const userId = req.user.id;
+  console.log(userId)
   const role = req.user.role;
-  const {...createData} = req.body;
-  
-  if(!createData) {
+  console.log(role)
+  const { email, username, ...updateData } = req.body;
+
+  if(!req.body) {
     return res.json({message: "Please enter details"})
   }
   try{
@@ -71,12 +73,12 @@ export async function createUpdateAlumniStudentProfileController (req,res){
     }
 
       
-    if (createData.username ||  createData.email){
+    if (username || email){
       await prisma.user.update({
         where: { id: userId },
         data: {
-          ...(data.username !== undefined && { username: data.username }),
-          ...(data.email !== undefined && { email: data.email }),
+          ...(username !== undefined && { username: username }),
+          ...(email !== undefined && { email: email }),
         },
       });
     }
@@ -84,32 +86,25 @@ export async function createUpdateAlumniStudentProfileController (req,res){
     let updatedProfile;
 
     if(role === "STUDENT"){
-      updatedProfile = await prisma.studentProfile.upsert({
+      updatedProfile = await prisma.studentProfile.update({
         where: {
           userId
         },
-        update: {
-          ...createData
+        data: {
+          ...updateData
         },
-        create:{
-          userId,
-          ...createData
-        }
       })
       console.log(updatedProfile)
     }
     else if (role === "ALUMNI"){
-      updatedProfile = await prisma.alumniProfile.upsert({
+      updatedProfile = await prisma.alumniProfile.update({
         where: {
           userId
         },
-        update: {
-          ...createData
+        data: {
+          ...updateData
         },
-        create: {
-          userId,
-          ...createData
-        }
+      
       })
     }
     else {
@@ -117,6 +112,7 @@ export async function createUpdateAlumniStudentProfileController (req,res){
     }
   res.json({message: "Profile updated succesfully" , profile : updatedProfile}).status(200)
   }catch(e){
+    console.log(e.message)
     res.json({message: "Failed to update profile"}).status(401)
   }
 }
