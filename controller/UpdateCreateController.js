@@ -16,17 +16,17 @@ export async function showProfileAlumniStudentController(req, res) {
     });
 
     if (!user) {
-      return res.json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     let profile;
 
     if (user.role === "STUDENT" && user.studentProfile) {
-      profile = user.studentProfile;
+      profile = {...user.studentProfile,email:user.email,username:user.username};
     } else if (user.role === "ALUMNI" && user.alumniProfile) {
-      profile = user.alumniProfile;
+      profile = {...user.alumniProfile,email:user.email,username:user.username};
     } else {
-      return res.json({ message: "Profile not found for the given role" });
+      return res.status(404).json({ message: "Profile not found for the given role" });
     }
     // Need it later when we need who requested the data
 
@@ -40,7 +40,7 @@ export async function showProfileAlumniStudentController(req, res) {
     
     // console.log("Profile.. " ,profile);
     // console.log("userinfo.. " , userInfo)
-    res.json({
+    res.status(200).json({
         // user:userInfo,
         profile
     })
@@ -68,6 +68,17 @@ export async function createUpdateAlumniStudentProfileController (req,res){
     
     if(!user){
       return res.json({message:"User not found"}).status(404)
+    }
+
+      
+    if (createData.username ||  createData.email){
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          ...(data.username !== undefined && { username: data.username }),
+          ...(data.email !== undefined && { email: data.email }),
+        },
+      });
     }
 
     let updatedProfile;

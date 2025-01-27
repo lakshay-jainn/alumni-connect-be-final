@@ -6,6 +6,7 @@ export function checkForAuthentication(req, res, next) {
 
   if(authHeader && authHeader.startsWith("Bearer")){
     token = authHeader.split(" ")[1]
+    console.log(token)
     if(!token){
       return res.status(401).json({message: "NO token, authorization denied"})
     }
@@ -16,12 +17,14 @@ export function checkForAuthentication(req, res, next) {
   try {
     const decode = getUser(token);
     if(decode === null){
-      return res.json({message: "Invalid token"})
+     
+      return res.status(400).json({message: "Invalid token"})
+      
     }
     
-    // removing password security reasons
-    const {password, ...userWithoutPassword} = decode
-    req.user = userWithoutPassword;
+
+    req.user=decode;
+
     // console.log("The decoded user is : " , req.user)
     return next();
   } catch (error) {
