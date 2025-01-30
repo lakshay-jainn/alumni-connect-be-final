@@ -25,6 +25,11 @@ model User {
   alumniProfile              AlumniProfile? // 101 with alumni profile
   sentConnectionRequests     Connection[]    @relation("SentConnections")
   receivedConnectionRequests Connection[]    @relation("ReceivedConnections")
+  posts                      Post[]
+  postLikes                      PostLike[]
+  commentLikes CommentLike[]
+  comments                   Comment[]
+  updatedAt                  DateTime        @updatedAt
 }
 
 enum ROLE {
@@ -50,6 +55,7 @@ model StudentProfile {
   user        User     @relation(fields: [userId], references: [id])
 }
 
+
 model AlumniProfile {
   name     String @default("")
   DOB      String @default("")
@@ -61,12 +67,59 @@ model AlumniProfile {
   user     User   @relation(fields: [userId], references: [id])
 }
 
+
 model Connection {
   id         String   @id @default(uuid())
-  senderId   String   @unique
+  senderId   String
   sender     User     @relation("SentConnections", fields: [senderId], references: [id])
-  receiverId String   @unique
+  receiverId String
   receiver   User     @relation("ReceivedConnections", fields: [receiverId], references: [id])
   status     STATUS   @default(PENDING)
   createdAt  DateTime @default(now())
+
+  @@unique([senderId, receiverId])
+  @@index([senderId, receiverId])
+}
+
+model Post {
+  id         String    @id @default(uuid())
+  content    String
+  caption    String?
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  likesCount Int       @default(0)
+  likes      PostLike[]
+  comments   Comment[]
+  createdAt  DateTime  @default(now())
+}
+
+
+model Comment {
+  id        String   @id @default(uuid())
+  comment   String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  likesCount Int @default(0)
+  likes     CommentLike[]
+}
+
+
+model PostLike {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  postId    String
+  post      Post    @relation(fields: [postId], references: [id])
+  @@unique([userId, postId])
+}
+
+model CommentLike {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  commentId String
+  Comment   Comment @relation(fields: [commentId], references: [id])
+  @@unique([userId, commentId])
 }
