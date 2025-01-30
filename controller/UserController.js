@@ -11,7 +11,7 @@ export async function handleUserSignupController(req, res) {
       },
     });
     if (exsistingUserByEmail) {
-      return res.json({
+      return res.status(400).json({
         user: null,
         message: "User exists with same email",
       });
@@ -24,7 +24,7 @@ export async function handleUserSignupController(req, res) {
 
     
     if (exsistingUserByUsername) {
-      return res.json({
+      return res.status(400).json({
         user: null,
         message: "User exists with the same username",
       });

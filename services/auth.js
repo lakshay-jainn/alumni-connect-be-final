@@ -17,8 +17,6 @@ export function setUser(user) {
 }
 
 export function getUser(token) {
-  console.log(token)
-  console.log('hello')
   if (!token) return null;
   try {
     return jwt.verify(token, JWT_PASSWORD);

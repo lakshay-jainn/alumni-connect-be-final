@@ -19,7 +19,7 @@ model User {
   email                      String          @unique
   password                   String
   role                       ROLE            @default(STUDENT)
-  profileImage               String          @default("https://ibb.co/5W6TpnY")
+  profileImage               String          @default("https://i.ibb.co/QFf9SC8/img-avatar.png")
   created_at                 DateTime        @default(now())
   studentProfile             StudentProfile? //1o1 with StudentProfile
   alumniProfile              AlumniProfile? // 101 with alumni profile

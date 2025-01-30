@@ -22,9 +22,9 @@ export async function showProfileAlumniStudentController(req, res) {
     let profile;
 
     if (user.role === "STUDENT" && user.studentProfile) {
-      profile = {...user.studentProfile,email:user.email,username:user.username};
+      profile = {...user.studentProfile,email:user.email,username:user.username,image:user.profileImage};
     } else if (user.role === "ALUMNI" && user.alumniProfile) {
-      profile = {...user.alumniProfile,email:user.email,username:user.username};
+      profile = {...user.alumniProfile,email:user.email,username:user.username,image:user.profileImage};
     } else {
       return res.status(404).json({ message: "Profile not found for the given role" });
     }
@@ -56,7 +56,7 @@ export async function createUpdateAlumniStudentProfileController (req,res){
   console.log(userId)
   const role = req.user.role;
   console.log(role)
-  const { email, username, ...updateData } = req.body;
+  const { email, username,image, ...updateData } = req.body;
 
   if(!req.body) {
     return res.json({message: "Please enter details"})
@@ -73,12 +73,13 @@ export async function createUpdateAlumniStudentProfileController (req,res){
     }
 
       
-    if (username || email){
+    if (username || email || image){
       await prisma.user.update({
         where: { id: userId },
         data: {
           ...(username !== undefined && { username: username }),
           ...(email !== undefined && { email: email }),
+          ...(image !== undefined && { profileImage: image }),
         },
       });
     }
@@ -94,7 +95,7 @@ export async function createUpdateAlumniStudentProfileController (req,res){
           ...updateData
         },
       })
-      console.log(updatedProfile)
+      
     }
     else if (role === "ALUMNI"){
       updatedProfile = await prisma.alumniProfile.update({
