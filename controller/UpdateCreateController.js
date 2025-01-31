@@ -57,7 +57,7 @@ export async function createUpdateAlumniStudentProfileController (req,res){
   const role = req.user.role;
   console.log(role)
   const { email, username,image, ...updateData } = req.body;
-
+  console.log(image);
   if(!req.body) {
     return res.json({message: "Please enter details"})
   }
