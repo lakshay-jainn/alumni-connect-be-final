@@ -3,11 +3,11 @@ import { sendConnectionRequestController, getPendingConnectionRequestsController
 
 const router = Router()
 
-router.get("/pending-connection" , getPendingConnectionRequestsController)
-router.get("/get-connection", getConnectionsController)
+router.get("/pending-connections" , getPendingConnectionRequestsController)
+router.get("/get-connections", getConnectionsController)
 router.post("/send-connection" , sendConnectionRequestController)
 router.post("/response-connection" , respondToConnectionRequestController)
 router.delete("/delete-connection" , removeConnectionController)
 
 
-export default router
+export default router;
