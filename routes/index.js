@@ -7,7 +7,7 @@ import adminRoutes from "./v1/admin/index.js"
 import alumni_student_Routes from "./v1/alumni_student/index.js";
 
 import { checkForAuthentication , restrictToOnly } from "../middlewares/auth.js";
-// import { seed } from "../services/seed.js";
+import { seed } from "../services/seed.js";
 const router = Router()
 
 
