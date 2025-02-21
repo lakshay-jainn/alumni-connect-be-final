@@ -35,7 +35,7 @@ export async function getPendingConnectionRequestsController(req, res) {
   }
 }
 
-export async function respondToConnectionRequestController(req, res) {
+export async function respondToConnectionRequestController(req, res) { 
   const { connectionId } = req.body;
 
   const { status } = req.body; // ACCEPTED and REJECTED bhejna bhai
