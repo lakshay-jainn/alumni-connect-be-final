@@ -18,14 +18,18 @@ export async function getPosts (userId,skip=0,take=15) {
         skip,
         take,
         include: {
-          user: true,
-
-          likes: {
-            where: {
-              userId
-            },
+          user: {
             select: {
-              userId: true
+              username: true,
+              profileImage: true
+            }
+          },
+          likes: {
+            // where: {
+            //   userId
+            // },
+            select: {
+              userId: true,
             }
           },
           comments: {
@@ -59,20 +63,20 @@ export async function getPosts (userId,skip=0,take=15) {
 }
 
 
-export async function likeDislikePost (userId,postId) {
+export async function likeDislikePost(userId, postId) {
   const like = await prisma.postLike.findFirst({
     where: {
       userId,
-      postId
-    }
-  })
+      postId,
+    },
+  });
 
-  if(like) {
+  if (like) {
     await prisma.postLike.delete({
       where: {
-        id: like.id
-      }
-    })
+        id: like.id,
+      },
+    });
 
     await prisma.post.update({
       where: {
@@ -80,21 +84,22 @@ export async function likeDislikePost (userId,postId) {
       },
       data: {
         likesCount: {
-          decrement: 1
-        }
-    }})
+          decrement: 1,
+        },
+      },
+    });
 
     return {
-      isLiked: false
-    }
+      isLiked: false,
+    };
   }
 
   await prisma.postLike.create({
     data: {
       userId,
-      postId
-    }
-  })
+      postId,
+    },
+  });
 
   await prisma.post.update({
     where: {
@@ -102,13 +107,15 @@ export async function likeDislikePost (userId,postId) {
     },
     data: {
       likesCount: {
-        increment: 1
-      }
-  }})
+        increment: 1,
+      },
+    },
+  });
 
   return {
-    isLiked: true
-  }
+    isLiked: true,
+  };  
+  
 }
 
 export async function createComment(userId , postId , content) {

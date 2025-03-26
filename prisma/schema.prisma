@@ -22,7 +22,7 @@ model User {
   profileImage               String          @default("https://i.ibb.co/QFf9SC8/img-avatar.png")
   created_at                 DateTime        @default(now())
   studentProfile             StudentProfile? //1o1 with StudentProfile
-  alumniProfile              AlumniProfile? // 101 with alumni profile
+  alumniProfile              AlumniProfile?  // 101 with alumni profile
   sentConnectionRequests     Connection[]    @relation("SentConnections")
   receivedConnectionRequests Connection[]    @relation("ReceivedConnections")
   posts                      Post[]
@@ -76,15 +76,14 @@ model Connection {
   receiver   User     @relation("ReceivedConnections", fields: [receiverId], references: [id])
   status     STATUS   @default(PENDING)
   createdAt  DateTime @default(now())
-
   @@unique([senderId, receiverId])
   @@index([senderId, receiverId])
 }
 
 model Post {
   id         String    @id @default(uuid())
-  content    String
-  caption    String?
+  content    String @default("")
+  caption    String @default("")
   userId     String
   user       User      @relation(fields: [userId], references: [id])
   likesCount Int       @default(0)
