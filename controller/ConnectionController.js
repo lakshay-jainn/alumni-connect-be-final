@@ -9,8 +9,6 @@ import {
 export async function sendConnectionRequestController(req, res) {
   const senderId = req.user.id;
   const { receiverId } = req.body;
-  console.log(senderId);
-  console.log(receiverId);
   try {
     const connectionRequest = await sendConnectionRequest(senderId, receiverId);
     return res.status(201).json({
@@ -72,8 +70,6 @@ export async function removeConnectionController(req,res) {
   const connectionId = req.body
 
   try{
-
-    
     const deletedConnection = await removeConnection(connectionId)
     
     return res.status(200).json({
@@ -85,5 +81,4 @@ export async function removeConnectionController(req,res) {
       message: "Failed to remove connection"
     })
   }
-
 }

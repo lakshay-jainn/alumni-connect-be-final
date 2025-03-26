@@ -15,6 +15,7 @@ export function checkForAuthentication(req, res, next) {
   else {
     return res.status(401).json({message: 'Invalid token format'})
   }
+  
   try {
     const decode = getUser(token);
     if(decode === null){
@@ -22,12 +23,10 @@ export function checkForAuthentication(req, res, next) {
       return res.status(400).json({message: "Invalid token"})
       
     }
-    
-
     req.user=decode;
 
     // console.log("The decoded user is : " , req.user)
-    return next();
+    return next() ;
   } catch (error) {
     res.status(400).json({message: "Token is not valid"})
   } 

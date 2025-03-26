@@ -5,9 +5,9 @@ import { listAllAlumniController } from "../../../controller/ListingController.j
 const router = Router()
 
 router.get("/profile-alumni-student" , showProfileAlumniStudentController )
-router.post("/create-update-profile-alumni-student" , createUpdateAlumniStudentProfileController)
+router.post("/profile-alumni-student" , createUpdateAlumniStudentProfileController)
 // router.patch("/update-profile-alumni-student" , checkForAuthentication , updateAlumniStudentProfile)
 
-router.get("/showallalumni" , listAllAlumniController )
+router.get("/alumni" , listAllAlumniController )
 
 export default router;

@@ -11,8 +11,9 @@ export function setUser(user) {
     id: user.id,
     role: user.role
   };
+  
   return jwt.sign(payload, JWT_PASSWORD ,{
-    expiresIn: "1h"
+    expiresIn: "24h"
   });
 }
 

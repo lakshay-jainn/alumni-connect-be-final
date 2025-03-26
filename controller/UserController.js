@@ -21,8 +21,6 @@ export async function handleUserSignupController(req, res) {
         username: username,
       },
     });
-
-    
     if (exsistingUserByUsername) {
       return res.status(400).json({
         user: null,
@@ -55,12 +53,14 @@ export async function handleUserSignupController(req, res) {
         }
       })
     }
-
     const token = setUser(user);
-    res.json({token, message: "User succesfully registered" });
+
+    res.status(201).json({token, message: "User succesfully registered" });
   } catch (error) {
     console.log(error);
-    res.send("");
+    res.status(500).json({
+      message: "Failed to create user"
+    });
   }
 }
 
