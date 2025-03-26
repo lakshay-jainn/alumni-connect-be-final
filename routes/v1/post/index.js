@@ -6,8 +6,8 @@ const router = Router()
 router.post("/post",createPostController)
 router.get("/posts", getPostsController)
 router.post("/like-post", likeDislikePostController)
-router.post("/comment",createCommentController)
-router.get("/comments", getCommentController)
+router.post("/create-comment",createCommentController)
+router.post("/comments", getCommentController)
 router.post("/like-comment",likeDislikeCommentController)
 
 

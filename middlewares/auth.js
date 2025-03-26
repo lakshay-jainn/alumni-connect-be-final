@@ -9,18 +9,18 @@ export function checkForAuthentication(req, res, next) {
     token = authHeader.split(" ")[1]
  
     if(!token){
-      return res.status(401).json({message: "NO token, authorization denied"})
+      return res.status(401).json({message: "NO token, authorization denied",token:false})
     }
   }
   else {
-    return res.status(401).json({message: 'Invalid token format'})
+    return res.status(401).json({message: 'Invalid token format',token:false})
   }
   
   try {
     const decode = getUser(token);
     if(decode === null){
      
-      return res.status(400).json({message: "Invalid token"})
+      return res.status(400).json({message: "Invalid token",token:false})
       
     }
     req.user=decode;
@@ -28,7 +28,7 @@ export function checkForAuthentication(req, res, next) {
     // console.log("The decoded user is : " , req.user)
     return next() ;
   } catch (error) {
-    res.status(400).json({message: "Token is not valid"})
+    res.status(400).json({message: "Token is not valid",token:false})
   } 
 }
 

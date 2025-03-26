@@ -19,6 +19,7 @@ export async function getPosts (userId,skip=0,take=15) {
         take,
         include: {
           user: true,
+
           likes: {
             where: {
               userId
@@ -28,9 +29,18 @@ export async function getPosts (userId,skip=0,take=15) {
             }
           },
           comments: {
+            skip:0,
+            take:5,
             include: {
               user: true,
-              likes: true
+              likes: {
+                where: {
+                  userId
+                },
+                select: {
+                  userId: true
+                }
+              },
             }
           }
         },
@@ -40,6 +50,10 @@ export async function getPosts (userId,skip=0,take=15) {
       });
       return posts.map((post) => ({
         ...post,
+        comments:post.comments.map((comment)=>({
+          ...comment,
+          isLiked:comment.likes.length > 0
+        })),  
         isLiked: post.likes.length > 0
       }))
 }
@@ -103,12 +117,16 @@ export async function createComment(userId , postId , content) {
       userId,
       postId,
       comment: content
-    }
-  })
+    },
+    include: {
+      user: true,
+  }
+})
 }
 
 export async function getComments(userId,postId,skip= 0,take=3) {
   const comments = await prisma.comment.findMany({
+    skip,take,
     where:{
       postId
     },
