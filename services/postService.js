@@ -25,9 +25,9 @@ export async function getPosts (userId,skip=0,take=15) {
             }
           },
           likes: {
-            // where: {
-            //   userId
-            // },
+            where: {
+              userId
+            },
             select: {
               userId: true,
             }

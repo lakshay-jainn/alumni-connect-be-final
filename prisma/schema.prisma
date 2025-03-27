@@ -31,6 +31,10 @@ model User {
   comments                   Comment[]
   updatedAt                  DateTime        @updatedAt
 }
+model Admin {
+  id String @id @default(uuid())
+  
+}
 
 enum ROLE {
   STUDENT
