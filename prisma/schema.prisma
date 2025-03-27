@@ -22,23 +22,21 @@ model User {
   profileImage               String          @default("https://i.ibb.co/QFf9SC8/img-avatar.png")
   created_at                 DateTime        @default(now())
   studentProfile             StudentProfile? //1o1 with StudentProfile
-  alumniProfile              AlumniProfile?  // 101 with alumni profile
+  alumniProfile              AlumniProfile? // 101 with alumni profile
   sentConnectionRequests     Connection[]    @relation("SentConnections")
   receivedConnectionRequests Connection[]    @relation("ReceivedConnections")
   posts                      Post[]
-  postLikes                      PostLike[]
-  commentLikes CommentLike[]
+  postLikes                  PostLike[]
+  commentLikes               CommentLike[]
   comments                   Comment[]
-  updatedAt                  DateTime        @updatedAt
-}
-model Admin {
-  id String @id @default(uuid())
-  
+
+  updatedAt DateTime @updatedAt
 }
 
 enum ROLE {
   STUDENT
   ALUMNI
+  ADMIN
 }
 
 enum STATUS {
@@ -55,22 +53,21 @@ model StudentProfile {
   internships String[]
   urls        String[]
   batch       String   @default("")
+  status      STATUS   @default(PENDING)
   userId      String   @id @unique
   user        User     @relation(fields: [userId], references: [id])
 }
 
-
 model AlumniProfile {
+  userId   String @id @unique
   name     String @default("")
   DOB      String @default("")
   course   String @default("")
   batch    String @default("")
-  jobTitle String @default("")                
+  jobTitle String @default("")
   company  String @default("")
-  userId   String @id @unique
   user     User   @relation(fields: [userId], references: [id])
 }
-
 
 model Connection {
   id         String   @id @default(uuid())
@@ -80,49 +77,50 @@ model Connection {
   receiver   User     @relation("ReceivedConnections", fields: [receiverId], references: [id])
   status     STATUS   @default(PENDING)
   createdAt  DateTime @default(now())
+
   @@unique([senderId, receiverId])
   @@index([senderId, receiverId])
 }
 
 model Post {
-  id         String    @id @default(uuid())
-  content    String @default("")
-  caption    String @default("")
+  id         String     @id @default(uuid())
+  content    String     @default("")
+  caption    String     @default("")
   userId     String
-  user       User      @relation(fields: [userId], references: [id])
-  likesCount Int       @default(0)
+  user       User       @relation(fields: [userId], references: [id])
+  likesCount Int        @default(0)
   likes      PostLike[]
   comments   Comment[]
-  createdAt  DateTime  @default(now())
+  createdAt  DateTime   @default(now())
 }
-
 
 model Comment {
-  id        String   @id @default(uuid())
-  comment   String
-  post      Post     @relation(fields: [postId], references: [id])
-  postId    String
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  likesCount Int @default(0)
-  likes     CommentLike[]
+  id         String        @id @default(uuid())
+  comment    String
+  post       Post          @relation(fields: [postId], references: [id])
+  postId     String
+  user       User          @relation(fields: [userId], references: [id])
+  userId     String
+  likesCount Int           @default(0)
+  likes      CommentLike[]
 }
 
-
 model PostLike {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  postId    String
-  post      Post    @relation(fields: [postId], references: [id])
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
   @@unique([userId, postId])
 }
 
 model CommentLike {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
   commentId String
   Comment   Comment @relation(fields: [commentId], references: [id])
+
   @@unique([userId, commentId])
 }

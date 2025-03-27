@@ -42,6 +42,40 @@ export async function getPostsController(req, res) {
     });
   }
 }
+export async function getPostbyIdController(req,res) {
+  const { postId, skip, take } = req.params;
+  const userId = req.user?.id;
+  try {
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      include: {
+        user: {
+          select: {
+            username: true,
+            profileImage: true,
+          },
+        },
+      },
+    });
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    const comments = await getComments(userId,postId, skip, take);
+
+    const like = await prisma.postLike.findFirst({
+      where: {
+        postId,
+        userId
+      },
+    });
+    const isLiked = !!like;
+
+    return res.status(200).json({ ...post, isLiked , comments });
+  } catch (error) {
+    return res.status(500).json({ erro: "Something went wrong ing" , error , e : error.message });
+  }
+}
 
 export async function likeDislikePostController(req, res) {
   const userId = req.user.id;

@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "ROLE" AS ENUM ('STUDENT', 'ALUMNI');
+CREATE TYPE "ROLE" AS ENUM ('STUDENT', 'ALUMNI', 'ADMIN');
 
 -- CreateEnum
 CREATE TYPE "STATUS" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED');
@@ -11,7 +11,7 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "role" "ROLE" NOT NULL DEFAULT 'STUDENT',
-    "profileImage" TEXT NOT NULL DEFAULT 'https://ibb.co/5W6TpnY',
+    "profileImage" TEXT NOT NULL DEFAULT 'https://i.ibb.co/QFf9SC8/img-avatar.png',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -27,6 +27,7 @@ CREATE TABLE "StudentProfile" (
     "internships" TEXT[],
     "urls" TEXT[],
     "batch" TEXT NOT NULL DEFAULT '',
+    "status" "STATUS" NOT NULL DEFAULT 'PENDING',
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "StudentProfile_pkey" PRIMARY KEY ("userId")
@@ -34,13 +35,13 @@ CREATE TABLE "StudentProfile" (
 
 -- CreateTable
 CREATE TABLE "AlumniProfile" (
+    "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL DEFAULT '',
     "DOB" TEXT NOT NULL DEFAULT '',
     "course" TEXT NOT NULL DEFAULT '',
     "batch" TEXT NOT NULL DEFAULT '',
     "jobTitle" TEXT NOT NULL DEFAULT '',
     "company" TEXT NOT NULL DEFAULT '',
-    "userId" TEXT NOT NULL,
 
     CONSTRAINT "AlumniProfile_pkey" PRIMARY KEY ("userId")
 );
@@ -59,8 +60,8 @@ CREATE TABLE "Connection" (
 -- CreateTable
 CREATE TABLE "Post" (
     "id" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
-    "caption" TEXT,
+    "content" TEXT NOT NULL DEFAULT '',
+    "caption" TEXT NOT NULL DEFAULT '',
     "userId" TEXT NOT NULL,
     "likesCount" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -83,7 +84,7 @@ CREATE TABLE "Comment" (
 CREATE TABLE "PostLike" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "postId" TEXT,
+    "postId" TEXT NOT NULL,
 
     CONSTRAINT "PostLike_pkey" PRIMARY KEY ("id")
 );
@@ -92,7 +93,7 @@ CREATE TABLE "PostLike" (
 CREATE TABLE "CommentLike" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "commentId" TEXT,
+    "commentId" TEXT NOT NULL,
 
     CONSTRAINT "CommentLike_pkey" PRIMARY KEY ("id")
 );
@@ -146,10 +147,10 @@ ALTER TABLE "Comment" ADD CONSTRAINT "Comment_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "PostLike" ADD CONSTRAINT "PostLike_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PostLike" ADD CONSTRAINT "PostLike_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "PostLike" ADD CONSTRAINT "PostLike_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "CommentLike" ADD CONSTRAINT "CommentLike_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "CommentLike" ADD CONSTRAINT "CommentLike_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "CommentLike" ADD CONSTRAINT "CommentLike_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

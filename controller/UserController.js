@@ -3,7 +3,8 @@ import { setUser } from "../services/auth.js";
 import { compare, hash } from "bcrypt";
 
 export async function handleUserSignupController(req, res) {
-  const { username, email, password , isAlumni } = req.body;
+  const { username, email, password, isAlumni } = req.body;
+  
   try {
     const exsistingUserByEmail = await prisma.user.findUnique({
       where: {
@@ -34,32 +35,31 @@ export async function handleUserSignupController(req, res) {
         username: username,
         email: email,
         password: hashedPassword,
-        role: isAlumni? "ALUMNI" : "STUDENT",
+        role: isAlumni ? "ALUMNI" : "STUDENT",
       },
     });
 
-    if (user.role === "ALUMNI"){
+    if (user.role === "ALUMNI") {
       await prisma.alumniProfile.create({
-        data:{
-          userId:user.id,
-        }
-      })
+        data: {
+          userId: user.id,
+        },
+      });
+    } else if (user.role === "STUDENT") {
+      await prisma.studentProfile.create({
+        data: {
+          userId: user.id,
+        },
+      });
     }
 
-    else if(user.role === "STUDENT"){
-      await prisma.studentProfile.create({
-        data:{
-          userId:user.id,
-        }
-      })
-    }
     const token = setUser(user);
 
-    res.status(201).json({token, message: "User succesfully registered" });
+    res.status(201).json({ token, message: "User succesfully registered" });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: "Failed to create user"
+      message: "Failed to create user",
     });
   }
 }
@@ -84,10 +84,9 @@ export async function handleUserLoginController(req, res) {
     }
     const token = setUser(user);
 
-    res.status(200).json({token})
-    
+    res.status(200).json({ token });
   } catch (error) {
-    res.status(500).json({message: "Something went wrong"})
+    res.status(500).json({ message: "Something went wrong from our side" });
   }
 }
 
