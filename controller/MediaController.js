@@ -1,6 +1,6 @@
 import { prisma } from "../libs/prisma.js";
 import { v2 as cloudinary } from "cloudinary";
-
+import { v4 as uuidv4 } from 'uuid';
 /*  i am first calling generateUploadSignature on frontend to get a signed
  signature(which is required when uploading to cloudinary) 
 and userid of user as i will be saving the profile pic by the name of the user's userid . 
@@ -17,9 +17,39 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+export function FeedsGenerateUploadSignature(req,res){
+  try {
+    const userId=req.user.id
+    const {folder} = req.body;
+    // Parameters for Cloudinary upload
+    const timestamp = Math.floor(Date.now() / 1000);
+    const publicId= `${userId}-${uuidv4()}`
+
+    const signature = cloudinary.utils.api_sign_request(
+      {
+        timestamp,
+        folder,
+        public_id: publicId, 
+      },
+      process.env.CLOUDINARY_API_SECRET
+    );
+
+    res.status(200).json({
+      publicId,
+      signature,
+      timestamp,
+      folder,
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      apiKey: process.env.CLOUDINARY_API_KEY,
+    });
+  } catch (error) {
+    console.log(error.message)
+    res.status(500).json({ error: "Failed to generate signature"});
+  }
+}
 
 
-export function generateUploadSignature(req,res){
+export function ProfileGenerateUploadSignature(req,res){
   try {
     const userId=req.user.id
     const {folder} = req.body;
@@ -35,7 +65,7 @@ export function generateUploadSignature(req,res){
     );
 
     res.status(200).json({
-      userId,
+      publicId:userId,
       signature,
       timestamp,
       folder,
