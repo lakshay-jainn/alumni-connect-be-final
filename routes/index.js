@@ -20,7 +20,7 @@ router.use("/admin",checkForAuthentication, restrictToOnly("ADMIN"),adminRoutes)
 router.use("/v1/alumni-student" ,checkForAuthentication, alumni_student_Routes)
 router.use("/v1/connection",checkForAuthentication , connectionRoutes)
 router.use("/v1/posts", checkForAuthentication,postRoutes)
-router.use("/v1/community",communityRoutes);
+router.use("/v1/community",checkForAuthentication,communityRoutes);
 
 
 router.use("/v1/handle-media",checkForAuthentication , mediaRoutes)
