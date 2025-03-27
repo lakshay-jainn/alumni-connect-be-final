@@ -1,5 +1,5 @@
 import {Router} from "express"
-import { generateUploadSignature,saveImage } from "../../../controller/MediaController.js";
+import { ProfileGenerateUploadSignature,FeedsGenerateUploadSignature,saveImage } from "../../../controller/MediaController.js";
 
 const router = Router()
 
@@ -7,8 +7,8 @@ const router = Router()
 
 
 // Generate Cloudinary signature
-router.post("/generate-upload-signature",generateUploadSignature);
-
+router.post("/profile-generate-upload-signature",ProfileGenerateUploadSignature);
+router.post("/feeds-generate-upload-signature",FeedsGenerateUploadSignature);
 // Save to database
 router.post("/save-image",saveImage );
 
