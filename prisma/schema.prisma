@@ -13,6 +13,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ROLE {
+  STUDENT
+  ALUMNI
+  ADMIN
+}
+
 model User {
   id                         String          @id @default(uuid())
   username                   String          @unique
@@ -25,18 +31,13 @@ model User {
   alumniProfile              AlumniProfile? // 101 with alumni profile
   sentConnectionRequests     Connection[]    @relation("SentConnections")
   receivedConnectionRequests Connection[]    @relation("ReceivedConnections")
+  communities                Community[]     @relation("CommunityMembers")
   posts                      Post[]
   postLikes                  PostLike[]
   commentLikes               CommentLike[]
   comments                   Comment[]
 
   updatedAt DateTime @updatedAt
-}
-
-enum ROLE {
-  STUDENT
-  ALUMNI
-  ADMIN
 }
 
 enum STATUS {
@@ -46,6 +47,7 @@ enum STATUS {
 }
 
 model StudentProfile {
+  userId      String   @id @unique
   name        String   @default("")
   DOB         String   @default("")
   course      String   @default("")
@@ -54,7 +56,6 @@ model StudentProfile {
   urls        String[]
   batch       String   @default("")
   status      STATUS   @default(PENDING)
-  userId      String   @id @unique
   user        User     @relation(fields: [userId], references: [id])
 }
 
@@ -66,6 +67,7 @@ model AlumniProfile {
   batch    String @default("")
   jobTitle String @default("")
   company  String @default("")
+  status   STATUS @default(PENDING)
   user     User   @relation(fields: [userId], references: [id])
 }
 
@@ -82,16 +84,27 @@ model Connection {
   @@index([senderId, receiverId])
 }
 
+model Community {
+  id          String @id @default(uuid())
+  name        String
+  description String
+  posts       Post[]
+  members     User[] @relation("CommunityMembers")
+}
+
 model Post {
-  id         String     @id @default(uuid())
-  content    String     @default("")
-  caption    String     @default("")
-  userId     String
-  user       User       @relation(fields: [userId], references: [id])
-  likesCount Int        @default(0)
-  likes      PostLike[]
-  comments   Comment[]
-  createdAt  DateTime   @default(now())
+  id           String     @id @default(uuid())
+  content      String     @default("")
+  caption      String     @default("")
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  likesCount   Int        @default(0)
+  commentCount Int        @default(0)
+  likes        PostLike[]
+  comments     Comment[]
+  createdAt    DateTime   @default(now())
+  Community    Community? @relation(fields: [communityId], references: [id])
+  communityId  String?
 }
 
 model Comment {

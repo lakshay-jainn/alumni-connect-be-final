@@ -23,7 +23,7 @@ export function checkForAuthentication(req, res, next) {
       return res.status(400).json({message: "Invalid token",token:false})
       
     }
-    console.log("from middleware" ,decode)
+    // console.log("from middleware" ,decode)
     req.user=decode;
 
     // console.log("The decoded user is : " , req.user)

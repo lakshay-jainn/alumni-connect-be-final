@@ -9,9 +9,9 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
-    volumes:
-      - alumni-data:/var/lib/postgresql/data
-    restart: unless-stopped
+    # volumes:
+    #   - alumni-data:/var/lib/postgresql/data
+    # restart: unless-stopped
 
 volumes:
   alumni-data:

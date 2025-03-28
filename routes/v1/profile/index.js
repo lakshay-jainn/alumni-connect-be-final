@@ -8,6 +8,8 @@ router.get("/profile-alumni-student" , showProfileAlumniStudentController )
 router.post("/profile-alumni-student" , createUpdateAlumniStudentProfileController)
 // router.patch("/update-profile-alumni-student" , checkForAuthentication , updateAlumniStudentProfile)
 
+
+// IN listing we have to get all accepted alumnis
 router.get("/alumni" , listAllAlumniController )
 
 export default router;
