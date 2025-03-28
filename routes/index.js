@@ -4,7 +4,7 @@ import userRoutes from "./v1/user/index.js"
 import connectionRoutes from "./v1/connection/index.js"
 import mediaRoutes from './v1/handle-media/index.js'
 import adminRoutes from "./v1/admin/index.js"
-import alumni_student_Routes from "./v1/alumni_student/index.js";
+import alumni_student_Routes from "./v1/profile/index.js";
 import postRoutes from "./v1/post/index.js"
 import communityRoutes from "./v1/community/index.js"
 import { checkForAuthentication , restrictToOnly } from "../middlewares/auth.js";
