@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-import { JWT_PASSWORD } from "../src/config.js";
+import { JWT_PASSWORD } from "../config/jwt.js";
 
 export function setUser(user) {
   // Full user object in payload after reduce the payload
