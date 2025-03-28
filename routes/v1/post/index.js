@@ -8,7 +8,7 @@ router.get("/", getPostsController)
 router.get("/likes", getPostLikeController)
 router.post("/like-post", likeDislikePostController)
 router.post("/create-comment",createCommentController)
-router.get("/comments", getCommentController)
+router.post("/comments", getCommentController)
 router.post("/like-comment",likeDislikeCommentController)
 router.get("/:postId", getPostbyIdController)
 
