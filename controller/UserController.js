@@ -1,7 +1,8 @@
 import { prisma } from "../libs/prisma.js";
 import { generateResetToken, setUser, verifyResetToken } from "../services/jwt.js";
-import { compare, hash, genSalt } from "bcrypt";
+import { compare, hash } from "bcrypt";
 import { sendEmail } from "../services/email.js";
+import { deQueue } from "../jobs/emailJob.js";
 
 export async function handleUserSignupController(req, res) {
   try {
@@ -105,15 +106,9 @@ export async function handleUserForgetPassword(req, res) {
         .status(400)
         .json({ message: "User not found with this email" });
     }
-    console.log("108",user)
-
-    // const gibrish = await genSalt(10);
 
     const token = await generateResetToken(user.id,user.password);
 
-    console.log("113",token)
-
-    // const url = `http://localhost:5173/reset-password?token=${token}`
     const resetUrl = `${req.protocol}://${req.get(
       "host"
     )}/reset-password?token=${token}`;
@@ -125,20 +120,15 @@ export async function handleUserForgetPassword(req, res) {
     `;
 
     // email service
-    await sendEmail({
+    const options = {
       email: user.email,
       subject: "Password changed request received",
       message,
-    });
+    }
 
-    // await prisma.user.update({
-    //   where: { email },
-    //   data: {
-    //     passwordResetToken: token,
-    //     tokenSendAt: new Date().toISOString(),
-    //   },
-    // });
-    console.log("password link", resetUrl);
+    sendEmail(options);
+    deQueue(options)
+
     res.status(200).json({ message: "Password reset link sent successfully" });
   } catch (error) {
     res
