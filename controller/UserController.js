@@ -1,8 +1,7 @@
 import { prisma } from "../libs/prisma.js";
-import { setUser } from "../services/auth.js";
+import { generateResetToken, setUser, verifyResetToken } from "../services/jwt.js";
 import { compare, hash, genSalt } from "bcrypt";
-import {v4} from "uuid"
-import { checkDateHourDiff } from "../utils/moment.js";
+import { sendEmail } from "../services/email.js";
 
 export async function handleUserSignupController(req, res) {
   try {
@@ -29,6 +28,7 @@ export async function handleUserSignupController(req, res) {
         message: "User exists with the same username",
       });
     }
+
     const hashedPassword = await hash(password, 12);
 
     const user = await prisma.user.create({
@@ -55,7 +55,6 @@ export async function handleUserSignupController(req, res) {
     }
 
     const token = setUser(user);
-
     res.status(201).json({ token, message: "User succesfully registered" });
   } catch (error) {
     console.log(error);
@@ -97,8 +96,8 @@ export async function handleUserForgetPassword(req, res) {
 
     const user = await prisma.user.findUnique({
       where: {
-        email
-      }
+        email,
+      },
     });
 
     if (!user) {
@@ -106,50 +105,66 @@ export async function handleUserForgetPassword(req, res) {
         .status(400)
         .json({ message: "User not found with this email" });
     }
+    console.log("108",user)
 
-    const gibrish = await genSalt(10)
+    // const gibrish = await genSalt(10);
 
-    const token = await hash(v4(), 12)
-    
-    const url = `http://localhost:5173/reset-password?token=${token}`
+    const token = await generateResetToken(user.id,user.password);
+
+    console.log("113",token)
+
+    // const url = `http://localhost:5173/reset-password?token=${token}`
+    const resetUrl = `${req.protocol}://${req.get(
+      "host"
+    )}/reset-password?token=${token}`;
+
+    const message = `
+      <p>You requested a password reset. Click the link below to continue:</p>
+      <a href="${resetUrl}">Reset Password</a>
+      <p>This link will expire in 1 hour.</p>
+    `;
+
     // email service
+    await sendEmail({
+      email: user.email,
+      subject: "Password changed request received",
+      message,
+    });
 
-    await prisma.user.update({
-      where: {email},
-      data: {
-        passwordResetToken: token,
-        tokenSendAt: new Date().toISOString()
-      }
-    })
-    console.log("password link", url)
-    res.status(200).json({message: "Password reset link sent successfully"})
-
+    // await prisma.user.update({
+    //   where: { email },
+    //   data: {
+    //     passwordResetToken: token,
+    //     tokenSendAt: new Date().toISOString(),
+    //   },
+    // });
+    console.log("password link", resetUrl);
+    res.status(200).json({ message: "Password reset link sent successfully" });
   } catch (error) {
-    res.status(500).json({message: "Failed to send reset link"})
+    res
+      .status(500)
+      .json({ message: "Failed to send reset link", error, e: error.message });
   }
 }
 
-export async function handleUserResetPassword(req,res) {
+export async function handleUserResetPassword(req, res) {
   try {
-    const {token, newPassword} = req.body;
-    console.log("from 134",token)
-    const resetToken = await prisma.user.findUnique({
-      where: {
-        passwordResetToken: token
-      }
-    })
-    console.log("from 140",resetToken)
+    const { token, newPassword } = req.body;
 
-    if(!resetToken) {
-      return res.status(400).json({message: "Invalid or expired token"})
+    const decoded = await verifyResetToken(token);
+
+    if(!decoded) {
+      return res.status(400).json({message: "Invalid token"})
     }
 
-    // Checking difference 2h
-    const hoursDiff = checkDateHourDiff(resetToken.tokenSendAt)
-    if(hoursDiff > 2) {
-      return res.status(422).json({
-        message: "Token expired"
-      })
+    const user = await prisma.user.findUnique({
+      where: {
+        id: decoded.id
+      },
+    });
+
+    if (!user || user.password !== decoded.hash) {
+      return res.status(400).json({ message: "Invalid or expired token" });
     }
 
     const hashedPassword = await hash(newPassword, 12);
@@ -157,17 +172,14 @@ export async function handleUserResetPassword(req,res) {
     await prisma.user.update({
       data: {
         password: hashedPassword,
-        passwordResetToken: null,
-        tokenSendAt: null
       },
       where: {
-        email: resetToken.email
-      }
-    })
+        id: user.id
+      },
+    });
 
-    res.status(200).json({message: "Password reset successfully"})
-
+    res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
-    res.status(500).json({message: "Failed" , error , e : error.message})
+    res.status(500).json({ message: "Failed", error, e: error.message });
   }
 }

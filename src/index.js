@@ -2,6 +2,7 @@ import dotenv from "dotenv"
 dotenv.config()
 import cors from "cors"
 import express from "express";
+import { appLimiter } from "../config/rateLimiter.js";
 
 const app = express();
 
@@ -21,7 +22,6 @@ app.get("/", (req,res) => {
 
 // Routes file
 import routes from '../routes/index.js'
-import { appLimiter } from "../config/rateLimiter.js";
 app.use("/api", routes);
 //http:localhost:8080/user
 
@@ -30,3 +30,16 @@ app.use("/api", routes);
 app.listen(PORT, ()=>{
     console.log(`Server started at port ${PORT}`);
 });
+
+const gracefulShutdown = async () => {
+    console.log('Shutting down gracefully...');
+    try {
+      process.exit(0);
+    } catch (err) {
+      console.log('Error during shutdown:', err);
+      process.exit(1);
+    }
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
