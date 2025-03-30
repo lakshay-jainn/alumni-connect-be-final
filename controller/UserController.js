@@ -2,7 +2,6 @@ import { prisma } from "../libs/prisma.js";
 import { generateResetToken, setUser, verifyResetToken } from "../services/jwt.js";
 import { compare, hash } from "bcrypt";
 import { sendEmail } from "../services/email.js";
-import { deQueue } from "../jobs/emailJob.js";
 
 export async function handleUserSignupController(req, res) {
   try {
@@ -126,8 +125,8 @@ export async function handleUserForgetPassword(req, res) {
       message,
     }
 
+    //sending mail but not waiting for it to finish
     sendEmail(options);
-    deQueue(options)
 
     res.status(200).json({ message: "Password reset link sent successfully" });
   } catch (error) {

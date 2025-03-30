@@ -1,6 +1,5 @@
 import {createTransport} from "nodemailer";
 
-// Create the tranporter once
 const transport = createTransport({
   host: "sandbox.smtp.mailtrap.io",
   port: 2525,
@@ -9,9 +8,8 @@ const transport = createTransport({
     pass: "e2a1696c165f32",
   },
 });
-
 export const sendEmail = async (options) => {
-  // Email options
+
   const emailOptions = {
     from: "support<hrc@alumni.com>",
     to: options.email,
