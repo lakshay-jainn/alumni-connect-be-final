@@ -65,9 +65,15 @@ export async function handleUserSignupController(req, res) {
 }
 
 export async function handleUserLoginController(req, res) {
-  //validate user like password length and any other thing
+  //validate user like password length and any other thing like capatlisation
+  //validate email format
   try {
     const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: "Please provide email and password" });
+    }
+
     const user = await prisma.user.findUnique({
       where: {
         email: email,
@@ -127,7 +133,6 @@ export async function handleUserForgetPassword(req, res) {
 
     //sending mail but not waiting for it to finish
     sendEmail(options);
-
     res.status(200).json({ message: "Password reset link sent successfully" });
   } catch (error) {
     res
@@ -172,3 +177,4 @@ export async function handleUserResetPassword(req, res) {
     res.status(500).json({ message: "Failed", error, e: error.message });
   }
 }
+

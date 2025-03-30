@@ -1,14 +1,14 @@
-import {createTransport} from "nodemailer";
+import { createTransport } from "nodemailer";
 
-const transport = createTransport({
-  host: "sandbox.smtp.mailtrap.io",
-  port: 2525,
-  auth: {
-    user: "4c2169d04c1885",
-    pass: "e2a1696c165f32",
-  },
-});
 export const sendEmail = async (options) => {
+  const transport = createTransport({
+    host: "sandbox.smtp.mailtrap.io",
+    port: 2525,
+    auth: {
+      user: "4c2169d04c1885",
+      pass: "e2a1696c165f32",
+    },
+  });
 
   const emailOptions = {
     from: "support<hrc@alumni.com>",
@@ -17,5 +17,7 @@ export const sendEmail = async (options) => {
     html: options.message,
   };
 
-  await transport.sendMail(emailOptions).catch(err => console.log("Email error", err));
+  await transport
+    .sendMail(emailOptions)
+    .catch((err) => console.log("Email error", err));
 };
