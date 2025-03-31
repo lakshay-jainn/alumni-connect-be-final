@@ -8,6 +8,7 @@ import alumni_student_Routes from "./v1/profile/index.js";
 import postRoutes from "./v1/post/index.js"
 import communityRoutes from "./v1/community/index.js"
 import { checkForAuthentication , restrictToOnly } from "../middlewares/auth.js";
+import { authLimiter } from "../config/rateLimiter.js";
 // import { seed } from "../services/seed.js";
 const router = Router()
 
@@ -21,11 +22,11 @@ router.use("/v1/alumni-student" ,checkForAuthentication, alumni_student_Routes)
 router.use("/v1/connection",checkForAuthentication , connectionRoutes)
 router.use("/v1/posts", checkForAuthentication,postRoutes)
 router.use("/v1/community",checkForAuthentication,communityRoutes);
-
-
 router.use("/v1/handle-media",checkForAuthentication , mediaRoutes)
+
+
 // All can access this route
-router.use("/v1/user" , userRoutes)
+router.use("/v1/user" ,authLimiter, userRoutes)
 
 // //Seeding database
 // router.post("/v1/seed" , seed)

@@ -1,11 +1,11 @@
 import { prisma } from "../libs/prisma.js";
-import { setUser } from "../services/auth.js";
+import { generateResetToken, setUser, verifyResetToken } from "../services/jwt.js";
 import { compare, hash } from "bcrypt";
+import { sendEmail } from "../services/email.js";
 
 export async function handleUserSignupController(req, res) {
-  const { username, email, password, isAlumni } = req.body;
-  
   try {
+    const { username, email, password, isAlumni } = req.body;
     const exsistingUserByEmail = await prisma.user.findUnique({
       where: {
         email: email,
@@ -28,6 +28,7 @@ export async function handleUserSignupController(req, res) {
         message: "User exists with the same username",
       });
     }
+
     const hashedPassword = await hash(password, 12);
 
     const user = await prisma.user.create({
@@ -54,7 +55,6 @@ export async function handleUserSignupController(req, res) {
     }
 
     const token = setUser(user);
-
     res.status(201).json({ token, message: "User succesfully registered" });
   } catch (error) {
     console.log(error);
@@ -65,9 +65,15 @@ export async function handleUserSignupController(req, res) {
 }
 
 export async function handleUserLoginController(req, res) {
-  const { email, password } = req.body;
-  //validate user like password length and any other thing
+  //validate user like password length and any other thing like capatlisation
+  //validate email format
   try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: "Please provide email and password" });
+    }
+
     const user = await prisma.user.findUnique({
       where: {
         email: email,
@@ -87,6 +93,88 @@ export async function handleUserLoginController(req, res) {
     res.status(200).json({ token });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong from our side" });
+  }
+}
+
+export async function handleUserForgetPassword(req, res) {
+  try {
+    const { email } = req.body;
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "User not found with this email" });
+    }
+
+    const token = await generateResetToken(user.id,user.password);
+
+    const resetUrl = `${req.protocol}://${req.get(
+      "host"
+    )}/reset-password?token=${token}`;
+
+    const message = `
+      <p>You requested a password reset. Click the link below to continue:</p>
+      <a href="${resetUrl}">Reset Password</a>
+      <p>This link will expire in 1 hour.</p>
+    `;
+
+    // email service
+    const options = {
+      email: user.email,
+      subject: "Password changed request received",
+      message,
+    }
+
+    //sending mail but not waiting for it to finish
+    sendEmail(options);
+    res.status(200).json({ message: "Password reset link sent successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to send reset link", error, e: error.message });
+  }
+}
+
+export async function handleUserResetPassword(req, res) {
+  try {
+    const { token, newPassword } = req.body;
+
+    const decoded = await verifyResetToken(token);
+
+    if(!decoded) {
+      return res.status(400).json({message: "Invalid token"})
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: decoded.id
+      },
+    });
+
+    if (!user || user.password !== decoded.hash) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    const hashedPassword = await hash(newPassword, 12);
+
+    await prisma.user.update({
+      data: {
+        password: hashedPassword,
+      },
+      where: {
+        id: user.id
+      },
+    });
+
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed", error, e: error.message });
   }
 }
 

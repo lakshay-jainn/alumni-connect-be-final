@@ -19,6 +19,12 @@ enum ROLE {
   ADMIN
 }
 
+enum STATUS {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 model User {
   id                         String          @id @default(uuid())
   username                   String          @unique
@@ -27,7 +33,7 @@ model User {
   role                       ROLE            @default(STUDENT)
   profileImage               String          @default("https://i.ibb.co/QFf9SC8/img-avatar.png")
   created_at                 DateTime        @default(now())
-  studentProfile             StudentProfile? //1o1 with StudentProfile
+  studentProfile             StudentProfile? // 1o1 with Student profile
   alumniProfile              AlumniProfile? // 101 with alumni profile
   sentConnectionRequests     Connection[]    @relation("SentConnections")
   receivedConnectionRequests Connection[]    @relation("ReceivedConnections")
@@ -40,35 +46,31 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
-enum STATUS {
-  PENDING
-  ACCEPTED
-  REJECTED
-}
-
 model StudentProfile {
-  userId      String   @id @unique
-  name        String   @default("")
-  DOB         String   @default("")
-  course      String   @default("")
-  skills      String[]
-  internships String[]
-  urls        String[]
-  batch       String   @default("")
-  status      STATUS   @default(PENDING)
-  user        User     @relation(fields: [userId], references: [id])
+  userId          String   @id @unique
+  name            String   @default("")
+  DOB             String   @default("")
+  course          String   @default("")
+  enrolmentNumber String   @default("")
+  skills          String[]
+  internships     String[]
+  urls            String[]
+  batch           String   @default("")
+  status          STATUS   @default(PENDING)
+  user            User     @relation(fields: [userId], references: [id])
 }
 
 model AlumniProfile {
-  userId   String @id @unique
-  name     String @default("")
-  DOB      String @default("")
-  course   String @default("")
-  batch    String @default("")
-  jobTitle String @default("")
-  company  String @default("")
-  status   STATUS @default(PENDING)
-  user     User   @relation(fields: [userId], references: [id])
+  userId          String @id @unique
+  name            String @default("")
+  DOB             String @default("")
+  course          String @default("")
+  enrolmentNumber String @default("")
+  batch           String @default("")
+  jobTitle        String @default("")
+  company         String @default("")
+  status          STATUS @default(PENDING)
+  user            User   @relation(fields: [userId], references: [id])
 }
 
 model Connection {
