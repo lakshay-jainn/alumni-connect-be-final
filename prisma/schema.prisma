@@ -58,7 +58,9 @@ model StudentProfile {
   batch           String   @default("")
   status          STATUS   @default(PENDING)
   user            User     @relation(fields: [userId], references: [id])
+  createdAt       DateTime @default(now())
 }
+
 
 model AlumniProfile {
   userId          String @id @unique
@@ -71,6 +73,16 @@ model AlumniProfile {
   company         String @default("")
   status          STATUS @default(PENDING)
   user            User   @relation(fields: [userId], references: [id])
+  createdAt       DateTime @default(now())
+}
+
+model Events {
+  id          String   @id @default(uuid())
+  title       String   @default("")
+  description String   @default("")
+  time        String   @default("")
+  location    String   @default("")
+  date        DateTime @default(now())
 }
 
 model Connection {

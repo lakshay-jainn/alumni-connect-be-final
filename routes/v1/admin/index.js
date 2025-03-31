@@ -3,7 +3,7 @@ import { Router } from "express";
 import { prisma } from "../../../libs/prisma.js";
 const router = Router();
 
-router.get("/", (req, res) => {
+router.get("/", (_, res) => {
   return res.json({ message: "welcome admin" });
 });
 
@@ -63,12 +63,14 @@ router.post("/action/student", async (req, res) => {
       data: {
         status: action,
       },
-      include: { user: {
-        select: {
+      include: {
+        user: {
+          select: {
             username: true,
-            profileImage: true
-        }
-      } },
+            profileImage: true,
+          },
+        },
+      },
     });
     return res.status(201).json(updatedStudent);
 
@@ -79,6 +81,7 @@ router.post("/action/student", async (req, res) => {
     return res.status(500).json({ message: `FAiled ${action}` });
   }
 });
+
 router.post("/action/alumni", async (req, res) => {
   try {
     const { action, userId } = req.body;
@@ -92,12 +95,14 @@ router.post("/action/alumni", async (req, res) => {
       data: {
         status: action,
       },
-      include: { user: {
-        select: {
+      include: {
+        user: {
+          select: {
             username: true,
-            profileImage: true
-        }
-      } },
+            profileImage: true,
+          },
+        },
+      },
     });
     return res.status(201).json(updatedAlumni);
 
@@ -106,49 +111,176 @@ router.post("/action/alumni", async (req, res) => {
     return res.status(500).json({ message: `Failed ${action}` });
   }
 });
-router.get("/history", async(_,res) => {
-    try {
-        const students = await prisma.studentProfile.findMany({
-            where: {
-                NOT: {
-                    status: "PENDING"
-                }
-            },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        username: true,
-                        profileImage: true
-                    }
-                }
-            }
-        })
 
-        const alumnis = await prisma.alumniProfile.findMany({
-            where: {
-                NOT: {
-                    status: "PENDING"
-                }
-            },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        username: true,
-                        profileImage: true
-                    }
-                }
-            }
-        })
+router.get("/history", async (_, res) => {
+  try {
+    const students = await prisma.studentProfile.findMany({
+      where: {
+        NOT: {
+          status: "PENDING",
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            profileImage: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    const alumnis = await prisma.alumniProfile.findMany({
+      where: {
+        NOT: {
+          status: "PENDING",
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            profileImage: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-       return res.status(200).json([
-            ...students.map(s => ({ ...s, type: 'student' })),
-            ...alumnis.map(a => ({ ...a, type: 'alumni' }))
-          ]);
-    } catch (error) {
-        return res.status(500).json({message: "Failed to get history please try again"})
+    return res
+      .status(200)
+      .json([
+        ...students.map((s) => ({ ...s, type: "student" })),
+        ...alumnis.map((a) => ({ ...a, type: "alumni" })),
+      ]);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({
+        message: "Failed to get history please try again",
+        error: error.message,
+        e: error,
+      });
+  }
+});
+
+// Total alumni and total student count
+// Caching here
+// no Total pending requests
+// Total alumnis , total students ,
+router.get("/count", async (_, res) => {
+  try {
+    const studentCount = await prisma.studentProfile.count({
+      where: {
+        NOT: {
+          status: "PENDING",
+        },
+      },
+    });
+
+    const alumniCount = await prisma.alumniProfile.count({
+      where: {
+        NOT: {
+          status: "PENDING",
+        },
+      },
+    });
+
+    const pendingStudents = await prisma.studentProfile.count({
+      where: {
+        status: "PENDING",
+      },
+    });
+
+    const pendingAlumni = await prisma.alumniProfile.count({
+      where: {
+        status: "PENDING",
+      },
+    });
+
+    return res
+      .status(200)
+      .json({
+        pendingRequests: pendingStudents + pendingAlumni,
+        studentCount,
+        alumniCount,
+      });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to get count" });
+  }
+});
+// Add alumni or student (isAlumni)
+router.post("/add", async (req, res) => {
+  try {
+    const {
+      username,
+      email,
+      isAlumni,
+      enrolmentNumber,
+      name,
+      dob,
+      course,
+      batch,
+    } = req.body;
+
+    const alreadyUserWithEmailAndUsername = await prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { username }],
+      },
+    });
+
+    if (alreadyUserWithEmailAndUsername) {
+      return res
+        .status(400)
+        .json({ message: "User already exists with same email or username" });
     }
-})
+
+    const user = await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: enrolmentNumber,
+        role: isAlumni ? "ALUMNI" : "STUDENT",
+      },
+    });
+
+    if (isAlumni) {
+      await prisma.alumniProfile.create({
+        data: {
+          userId: user.id,
+          status: "PENDING",
+          name,
+          DOB: dob,
+          course,
+          enrolmentNumber,
+          batch,
+        },
+      });
+    } else {
+      await prisma.studentProfile.create({
+        data: {
+          userId: user.id,
+          status: "PENDING",
+          name,
+          DOB: dob,
+          course,
+          enrolmentNumber,
+          batch,
+        },
+      });
+    }
+    return res.status(201).json(user);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Failed to add user", error: error.message, e: error });
+  }
+});
 
 export default router;
