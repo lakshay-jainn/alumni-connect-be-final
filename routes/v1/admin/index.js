@@ -126,6 +126,7 @@ router.get("/history", async (_, res) => {
             id: true,
             username: true,
             profileImage: true,
+            email:true
           },
         },
       },
@@ -145,6 +146,7 @@ router.get("/history", async (_, res) => {
             id: true,
             username: true,
             profileImage: true,
+            email:true
           },
         },
       },
@@ -187,7 +189,7 @@ router.get("/count", async (_, res) => {
     const alumniCount = await prisma.alumniProfile.count({
       where: {
         NOT: {
-          status: "PENDING",
+          OR:[{status:"PENDING"},{status:"REJECTED"}]
         },
       },
     });
