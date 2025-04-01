@@ -195,7 +195,7 @@ router.get("/count", async (_, res) => {
     const alumniCount = await prisma.alumniProfile.count({
       where: {
         NOT: {
-          status: "PENDING",
+          OR:[{status:"PENDING"},{status:"REJECTED"}]
         },
       },
     });

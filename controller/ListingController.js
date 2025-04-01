@@ -2,9 +2,9 @@ import { prisma } from "../libs/prisma.js";
     export async function listAllAlumniController(req, res) {
         try {
           const alumniProfiles = await prisma.alumniProfile.findMany({
-            // include: {
-            //   user: true, // if need the assosiated user details 
-            // },
+             include: {
+               user: true, // if need the assosiated user details 
+             },
           });
           res.status(200).json({
             success: true,
