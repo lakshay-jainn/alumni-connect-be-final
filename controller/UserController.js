@@ -2,10 +2,18 @@ import { prisma } from "../libs/prisma.js";
 import { generateResetToken, setUser, verifyResetToken } from "../services/jwt.js";
 import { compare, hash } from "bcrypt";
 import { sendEmail } from "../services/email.js";
+import { signUpSchema } from "../config/zodSchema.js";
 
 export async function handleUserSignupController(req, res) {
   try {
-    const { username, email, password, isAlumni } = req.body;
+
+    // const { username, email, password, isAlumni } = req.body;
+    
+
+    const validatedBody = signUpSchema.parse(req.body);
+
+    const { username, email, password, isAlumni } = validatedBody;
+
     const exsistingUserByEmail = await prisma.user.findUnique({
       where: {
         email: email,

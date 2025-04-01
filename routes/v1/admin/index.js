@@ -16,8 +16,10 @@ router.get("/pending", async (_, res) => {
       include: {
         user: {
           select: {
+            id: true,
             username: true,
             profileImage: true,
+            email: true
           },
         },
       },
@@ -30,8 +32,10 @@ router.get("/pending", async (_, res) => {
       include: {
         user: {
           select: {
+            id: true,
             username: true,
             profileImage: true,
+            email: true
           },
         },
       },
@@ -66,8 +70,10 @@ router.post("/action/student", async (req, res) => {
       include: {
         user: {
           select: {
+            id: true,
             username: true,
             profileImage: true,
+            email: true
           },
         },
       },
@@ -126,7 +132,7 @@ router.get("/history", async (_, res) => {
             id: true,
             username: true,
             profileImage: true,
-            email:true
+            email: true
           },
         },
       },
@@ -146,7 +152,7 @@ router.get("/history", async (_, res) => {
             id: true,
             username: true,
             profileImage: true,
-            email:true
+            email: true
           },
         },
       },
@@ -181,7 +187,7 @@ router.get("/count", async (_, res) => {
     const studentCount = await prisma.studentProfile.count({
       where: {
         NOT: {
-          status: "PENDING",
+          OR: [{ status: "PENDING" }, { status: "REJECTED" }],
         },
       },
     });
@@ -284,5 +290,7 @@ router.post("/add", async (req, res) => {
       .json({ message: "Failed to add user", error: error.message, e: error });
   }
 });
+
+//add crousel
 
 export default router;
