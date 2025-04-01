@@ -2,7 +2,7 @@ import { prisma } from "../libs/prisma.js";
 import { generateResetToken, setUser, verifyResetToken } from "../services/jwt.js";
 import { compare, hash } from "bcrypt";
 import { sendEmail } from "../services/email.js";
-import { signUpSchema } from "../config/zodSchema.js";
+import { signUpSchema,signInSchema,forgetPasswordSchema, resetPasswordSchema} from "../config/zodSchema.js";
 
 export async function handleUserSignupController(req, res) {
   try {
@@ -76,7 +76,8 @@ export async function handleUserLoginController(req, res) {
   //validate user like password length and any other thing like capatlisation
   //validate email format
   try {
-    const { email, password } = req.body;
+    const validatedBody = signInSchema.parse(req.body);
+    const { email, password } = validatedBody;
     
     if (!email || !password) {
       return res.status(400).json({ message: "Please provide email and password" });
@@ -106,7 +107,8 @@ export async function handleUserLoginController(req, res) {
 
 export async function handleUserForgetPassword(req, res) {
   try {
-    const { email } = req.body;
+    const validatedBody = forgetPasswordSchema.parse(req.body);
+    const { email } = validatedBody;
 
     const user = await prisma.user.findUnique({
       where: {
@@ -151,7 +153,8 @@ export async function handleUserForgetPassword(req, res) {
 
 export async function handleUserResetPassword(req, res) {
   try {
-    const { token, newPassword } = req.body;
+    const validatedBody = resetPasswordSchema.parse(req.body);
+    const { token, newPassword } = validatedBody;
 
     const decoded = await verifyResetToken(token);
 

@@ -15,3 +15,30 @@ export const signUpSchema = z.object({
     ,
     isAlumni: z.boolean().optional(),
 })
+
+export const signInSchema = z.object({
+    email: z.string()
+    .email({message: "Invalid email address"})
+    .transform((email) => email.toLowerCase())
+    ,
+    password: z.string()
+    .min(6,{message: "Password must be atleast 6 character"})
+    .max(20,{message: "Password must be less than 20 character"})
+})
+
+export const forgetPasswordSchema = z.object({
+    email: z.string()
+    .email({message: "Invalid email address"})
+    .transform((email) => email.toLowerCase())
+})
+
+export const resetPasswordSchema = z.object({
+    password: z.string()
+    .min(6,{message: "Password must be atleast 6 character"})
+    .max(20,{message: "Password must be less than 20 character"})
+    ,
+    token: z.string()
+    
+})
+
+
