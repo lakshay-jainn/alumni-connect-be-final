@@ -24,11 +24,13 @@ CREATE TABLE "StudentProfile" (
     "name" TEXT NOT NULL DEFAULT '',
     "DOB" TEXT NOT NULL DEFAULT '',
     "course" TEXT NOT NULL DEFAULT '',
+    "enrolmentNumber" TEXT NOT NULL DEFAULT '',
     "skills" TEXT[],
     "internships" TEXT[],
     "urls" TEXT[],
     "batch" TEXT NOT NULL DEFAULT '',
     "status" "STATUS" NOT NULL DEFAULT 'PENDING',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "StudentProfile_pkey" PRIMARY KEY ("userId")
 );
@@ -39,12 +41,29 @@ CREATE TABLE "AlumniProfile" (
     "name" TEXT NOT NULL DEFAULT '',
     "DOB" TEXT NOT NULL DEFAULT '',
     "course" TEXT NOT NULL DEFAULT '',
+    "enrolmentNumber" TEXT NOT NULL DEFAULT '',
     "batch" TEXT NOT NULL DEFAULT '',
     "jobTitle" TEXT NOT NULL DEFAULT '',
     "company" TEXT NOT NULL DEFAULT '',
     "status" "STATUS" NOT NULL DEFAULT 'PENDING',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "AlumniProfile_pkey" PRIMARY KEY ("userId")
+);
+
+-- CreateTable
+CREATE TABLE "Events" (
+    "id" TEXT NOT NULL,
+    "title" TEXT,
+    "description" TEXT,
+    "time" TEXT,
+    "location" TEXT,
+    "importantLinks" TEXT[],
+    "eventImage" TEXT,
+    "eventData" TEXT,
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Events_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable

@@ -61,28 +61,39 @@ model StudentProfile {
   createdAt       DateTime @default(now())
 }
 
-
 model AlumniProfile {
-  userId          String @id @unique
-  name            String @default("")
-  DOB             String @default("")
-  course          String @default("")
-  enrolmentNumber String @default("")
-  batch           String @default("")
-  jobTitle        String @default("")
-  company         String @default("")
-  status          STATUS @default(PENDING)
-  user            User   @relation(fields: [userId], references: [id])
+  userId          String   @id @unique
+  name            String   @default("")
+  DOB             String   @default("")
+  course          String   @default("")
+  enrolmentNumber String   @default("")
+  batch           String   @default("")
+  jobTitle        String   @default("")
+  company         String   @default("")
+  status          STATUS   @default(PENDING)
+  user            User     @relation(fields: [userId], references: [id])
   createdAt       DateTime @default(now())
 }
 
 model Events {
+  id             String   @id @default(uuid())
+  title          String?
+  description    String?
+  time           String?
+  location       String?
+  importantLinks String[]
+  eventImage     String?
+  eventData      String?
+  createdAt      DateTime @default(now())
+}
+
+model Carousel {
   id          String   @id @default(uuid())
-  title       String   @default("")
-  description String   @default("")
-  time        String   @default("")
-  location    String   @default("")
-  date        DateTime @default(now())
+  name        String
+  description String
+  image       String
+  batch       String
+  createdAt   DateTime @default(now())
 }
 
 model Connection {

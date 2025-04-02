@@ -46,7 +46,7 @@ router.get("/pending", async (_, res) => {
       ...alumni.map((alumni) => ({ ...alumni, type: "alumni" })),
     ];
 
-    res.status(200).json(response);
+    res.status(200).json({response, message: "Pending requests fetched successfully"});
   } catch (error) {
     res
       .status(500)
@@ -78,7 +78,7 @@ router.post("/action/student", async (req, res) => {
         },
       },
     });
-    return res.status(201).json(updatedStudent);
+    return res.status(201).json({updatedStudent, message: "Action Performed successfully"});
 
     // Integrate mail service
 
@@ -110,7 +110,7 @@ router.post("/action/alumni", async (req, res) => {
         },
       },
     });
-    return res.status(201).json(updatedAlumni);
+    return res.status(201).json({updatedAlumni, message: "Action Performed successfully"});
 
     // Integrate mail service
   } catch (error) {
@@ -178,10 +178,6 @@ router.get("/history", async (_, res) => {
   }
 });
 
-// Total alumni and total student count
-// Caching here
-// no Total pending requests
-// Total alumnis , total students ,
 router.get("/count", async (_, res) => {
   try {
     const studentCount = await prisma.studentProfile.count({
@@ -223,7 +219,7 @@ router.get("/count", async (_, res) => {
     return res.status(500).json({ message: "Failed to get count" });
   }
 });
-// Add alumni or student (isAlumni)
+
 router.post("/add", async (req, res) => {
   try {
     const {
@@ -283,7 +279,7 @@ router.post("/add", async (req, res) => {
         },
       });
     }
-    return res.status(201).json(user);
+    return res.status(201).json({user, message: "user added successfully"});
   } catch (error) {
     return res
       .status(500)
@@ -291,6 +287,145 @@ router.post("/add", async (req, res) => {
   }
 });
 
+router.post("/event", async (req, res) => {
+  try {
+    const { title, description, time, location, importantLinks,eventImage,eventData  } = req.body;
+
+    const event = await prisma.events.create({
+      data: {
+        title,
+        description,
+        time,
+        location,
+        importantLinks,
+        eventImage,
+        eventData
+      },
+    });
+
+    return res.status(201).json({event, message: "Event added successfully"});
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to add event" , error:error.message ,e : error});
+  }
+});
+
+router.get("/event", async (_, res) => {
+  try {
+    const events = await prisma.events.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return res.status(200).json({events, message: "Events fetched successfully"});
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to get events", error, e: error.message });
+  }
+});
+
+router.delete("/event/delete", async (req, res) => {
+  try {
+    const { id } = req.body;
+    console.log(id)
+    const event = await prisma.events.delete({
+      where: {
+        id
+      },
+    });
+    return res.status(200).json({event, message: "Event deleted successfully"});
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to delete event" , error:error.message ,e : error});
+  }
+});
+
+router.patch("/event/edit", async (req, res) => {
+  try {
+    const { id, title, description, time, location, importantLinks,eventImage } = req.body;
+
+    const event = await prisma.events.update({
+      where: {
+        id
+      },
+      data: {
+        title,
+        description,
+        time,
+        location,
+        importantLinks,
+        eventImage
+      },
+    });
+
+    return res.status(200).json({event, message: "Event updated successfully"});
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to update event" , error:error.message ,e : error});
+  }
+});
 //add crousel
+router.post("/crousel", async (req, res) => {
+  try {
+    const { image, name, description, batch } = req.body;
+
+    const crousel = await prisma.crousel.create({
+      data: {
+        batch,
+        name,
+        description,
+        image,
+      },
+    });
+    return res.status(201).json({crousel, message: "Crousel added successfully"});
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to add crousel" , error:error.message ,e : error});
+  }
+});
+
+router.get("/crousel", async (_, res) => {
+  try {
+    const crousel = await prisma.crousel.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return res.status(200).json({crousel, message: "Crousel fetched successfully"});
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to get crousel" , error:error.message ,e : error});
+  }
+});
+
+router.delete("/crousel/delete", async (req, res) => {
+  try {
+    const { id } = req.body;
+    const crousel = await prisma.crousel.delete({
+      where: {
+        id
+      },
+    });
+    return res.status(200).json({crousel, message: "Crousel deleted successfully"});
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to delete crousel" , error:error.message ,e : error});
+  }
+});
+
+router.patch("/crousel/edit", async (req, res) => {
+  try {
+    const { id, image, name, description, batch } = req.body;
+
+    const crousel = await prisma.crousel.update({
+      where: {
+        id
+      },
+      data: {
+        batch,
+        name,
+        description,
+        image,
+      },
+    });
+
+    return res.status(200).json({crousel, message: "Crousel updated successfully"});
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to update crousel" , error:error.message ,e : error});
+  }
+});
 
 export default router;
