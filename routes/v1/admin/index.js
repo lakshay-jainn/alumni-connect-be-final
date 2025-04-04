@@ -230,10 +230,14 @@ router.post("/add", async (req, res) => {
       email,
       isAlumni,
       enrolmentNumber,
-      name,
-      dob,
-      course,
       batch,
+      firstName,
+      lastName,
+      gender,
+      course,
+      startYear,
+      endYear,
+      college
     } = req.body;
 
     const alreadyUserWithEmailAndUsername = await prisma.user.findFirst({
@@ -257,31 +261,28 @@ router.post("/add", async (req, res) => {
       },
     });
 
-    if (isAlumni) {
-      await prisma.alumniProfile.create({
+    const profileSelect = !isAlumni ? "studentProfile" : "alumniProfile";
+
+      await prisma[profileSelect].create({
         data: {
           userId: user.id,
           status: "PENDING",
-          name,
-          DOB: dob,
-          course,
           enrolmentNumber,
           batch,
+          basic: {
+            firstName,
+            lastName,
+            gender,
+            course,
+            courseDuration: {
+              startYear,
+              endYear,
+            },
+            college
+          }
         },
       });
-    } else {
-      await prisma.studentProfile.create({
-        data: {
-          userId: user.id,
-          status: "PENDING",
-          name,
-          DOB: dob,
-          course,
-          enrolmentNumber,
-          batch,
-        },
-      });
-    }
+    
     return res.status(201).json({user, message: "user added successfully"});
   } catch (error) {
     return res
