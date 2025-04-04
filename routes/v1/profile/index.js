@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../../../libs/prisma.js";
+import { baseProfileSchema } from "../../../config/zodSchema.js";
 const router = Router();
 
 router.get("/", async (req, res) => {
@@ -24,19 +25,16 @@ router.get("/", async (req, res) => {
     const profileSelect =
       role === "STUDENT" ? "studentProfile" : "alumniProfile";
 
-    console.log(user);
-
     const response = {
       email: user.email,
       profileImage: user.profileImage,
       username: user.username,
-      userType: role,
       profileCompletionPercentage:
         user[profileSelect].profileCompletionPercentage,
       banner: user[profileSelect].banner,
 
       //Basic
-      basic: user[profileSelect].basic,
+      basic: {...user[profileSelect].basic, userType: role},
 
       // resume
       resume: user[profileSelect].resume,
@@ -76,6 +74,23 @@ router.post("/", async (req, res) => {
 
   const updates = req.body;
 
+  const validation = baseProfileSchema.safeParse(updates);
+
+  console.log("79", validation);
+
+  if (!validation.success) {
+    const errors = validation.error.errors.map(err => ({
+      field: err.path.join('.'),
+      message: err.message
+    }));
+    
+    return res.status(400).json({
+      message: "Validation failed under these conditions",
+      errors
+    });
+  }
+
+
   try {
     const profileSelect =
       role === "STUDENT" ? "studentProfile" : "alumniProfile";
@@ -96,7 +111,7 @@ router.post("/", async (req, res) => {
 
 
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
+      Object.entries(validation.data).filter(([_, v]) => v !== undefined)
     );
 
     const existingProfile = await prisma[profileSelect].findUnique({
