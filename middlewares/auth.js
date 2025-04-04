@@ -18,6 +18,7 @@ export function checkForAuthentication(req, res, next) {
   
   try {
     const decode = getUser(token);
+    
     if(decode === null){
      
       return res.status(400).json({message: "Invalid token",token:false})

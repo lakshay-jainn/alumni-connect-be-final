@@ -91,7 +91,7 @@ export async function saveImage(req,res){
     
     await prisma.user.update({
       where: { id: userId ,role:role},
-      data: { profileImage: profileImage },
+      data: { profileImage },
     });
 
     res.json({ success: true });

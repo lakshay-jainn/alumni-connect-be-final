@@ -4,6 +4,7 @@ export async function showProfileAlumniStudentController(req, res) {
   const userId = req.user.id;
   const role = req.user.role;
 
+
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -51,13 +52,7 @@ export async function showProfileAlumniStudentController(req, res) {
 
 export async function createUpdateAlumniStudentProfileController (req,res){
 
-  
-  const userId = req.user.id;
-  console.log(userId)
-  const role = req.user.role;
-  console.log(role)
-  const { email, username,image, ...updateData } = req.body;
-  console.log(image);
+  const { email, username,image,  role, userId , ...updateData} = req.body;
   if(!req.body) {
     return res.json({message: "Please enter details"})
   }

@@ -43,36 +43,51 @@ model User {
   commentLikes               CommentLike[]
   comments                   Comment[]
 
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model StudentProfile {
-  userId          String   @id @unique
-  name            String   @default("")
-  DOB             String   @default("")
-  course          String   @default("")
-  enrolmentNumber String   @default("")
-  skills          String[]
-  internships     String[]
-  urls            String[]
-  batch           String   @default("")
-  status          STATUS   @default(PENDING)
-  user            User     @relation(fields: [userId], references: [id])
-  createdAt       DateTime @default(now())
+  userId                      String   @id @unique
+  enrolmentNumber             String?
+  skills                      String[]
+  profileCompletionPercentage String?
+  resume                      String?
+  about                       String?
+  banner                      String?
+  education                   Json?
+  basic                       Json?
+  accomplishments             Json?
+  personalDetails             Json?
+  socialLinks                 Json?
+  workExperience              Json?
+  urls                        String[]
+  batch                       String   @default("")
+  status                      STATUS   @default(PENDING)
+  user                        User     @relation(fields: [userId], references: [id])
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @default(now()) @updatedAt
 }
 
 model AlumniProfile {
-  userId          String   @id @unique
-  name            String   @default("")
-  DOB             String   @default("")
-  course          String   @default("")
-  enrolmentNumber String   @default("")
-  batch           String   @default("")
-  jobTitle        String   @default("")
-  company         String   @default("")
-  status          STATUS   @default(PENDING)
-  user            User     @relation(fields: [userId], references: [id])
-  createdAt       DateTime @default(now())
+  userId                      String   @id @unique
+  enrolmentNumber             String?
+  skills                      String[]
+  profileCompletionPercentage String?
+  resume                      String?
+  about                       String?
+  banner                      String?
+  education                   Json?
+  basic                       Json?
+  accomplishments             Json?
+  personalDetails             Json?
+  socialLinks                 Json?
+  workExperience              Json?
+  urls                        String[]
+  batch                       String   @default("")
+  status                      STATUS   @default(PENDING)
+  user                        User     @relation(fields: [userId], references: [id])
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @default(now()) @updatedAt
 }
 
 model Events {

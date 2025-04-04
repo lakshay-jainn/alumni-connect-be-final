@@ -22,6 +22,9 @@ router.get("/pending", async (_, res) => {
             email: true
           },
         },
+        orderBy: {
+          createdAt: "desc"
+        }
       },
     });
 
@@ -46,7 +49,7 @@ router.get("/pending", async (_, res) => {
       ...alumni.map((alumni) => ({ ...alumni, type: "alumni" })),
     ];
 
-    res.status(200).json({response, message: "Pending requests fetched successfully"});
+    res.status(200).json(response);
   } catch (error) {
     res
       .status(500)
@@ -360,7 +363,7 @@ router.patch("/event/edit", async (req, res) => {
     return res.status(500).json({ message: "Failed to update event" , error:error.message ,e : error});
   }
 });
-//add crousel
+
 router.post("/crousel", async (req, res) => {
   try {
     const { image, name, description, batch } = req.body;
