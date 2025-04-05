@@ -32,8 +32,6 @@ model User {
   password                   String
   role                       ROLE            @default(STUDENT)
   profileImage               String          @default("https://i.ibb.co/QFf9SC8/img-avatar.png")
-  studentProfile             StudentProfile? // 1o1 with Student profile
-  alumniProfile              AlumniProfile?
   profile                    Profile? // 101 with alumni profile
   sentConnectionRequests     Connection[]    @relation("SentConnections")
   receivedConnectionRequests Connection[]    @relation("ReceivedConnections")
@@ -78,47 +76,6 @@ model Profile {
   @@index([status])
 }
 
-model StudentProfile {
-  userId                      String   @id @unique
-  enrollmentNumber            String?
-  skills                      String[]
-  profileCompletionPercentage String   @default("0")
-  resume                      String?
-  about                       String?
-  banner                      String?
-  education                   Json?
-  basic                       Json?
-  accomplishments             Json?
-  personalDetails             Json?
-  socialLinks                 Json?
-  workExperience              Json?
-  batch                       String?
-  status                      STATUS   @default(PENDING)
-  user                        User     @relation(fields: [userId], references: [id])
-  createdAt                   DateTime @default(now())
-  updatedAt                   DateTime @default(now()) @updatedAt
-}
-
-model AlumniProfile {
-  userId                      String   @id @unique
-  enrollmentNumber            String?
-  skills                      String[]
-  profileCompletionPercentage String   @default("0")
-  resume                      String?
-  about                       String?
-  banner                      String?
-  education                   Json?
-  basic                       Json?
-  accomplishments             Json?
-  personalDetails             Json?
-  socialLinks                 Json?
-  workExperience              Json?
-  batch                       String?
-  status                      STATUS   @default(PENDING)
-  user                        User     @relation(fields: [userId], references: [id])
-  createdAt                   DateTime @default(now())
-  updatedAt                   DateTime @default(now()) @updatedAt
-}
 
 model Events {
   id             String   @id @default(uuid())
