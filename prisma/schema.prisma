@@ -48,7 +48,7 @@ model User {
 
 model StudentProfile {
   userId                      String   @id @unique
-  enrolmentNumber             String?
+  enrollmentNumber             String?
   skills                      String[]
   profileCompletionPercentage String @default("0")
   resume                      String?
@@ -60,8 +60,7 @@ model StudentProfile {
   personalDetails             Json?
   socialLinks                 Json?
   workExperience              Json?
-  // urls                        String[]
-  batch                       String   @default("")
+  batch                       String?   
   status                      STATUS   @default(PENDING)
   user                        User     @relation(fields: [userId], references: [id])
   createdAt                   DateTime @default(now())
@@ -70,7 +69,7 @@ model StudentProfile {
 
 model AlumniProfile {
   userId                      String   @id @unique
-  enrolmentNumber             String?
+  enrollmentNumber             String?
   skills                      String[]
   profileCompletionPercentage String @default("0")
   resume                      String?
@@ -82,8 +81,7 @@ model AlumniProfile {
   personalDetails             Json?
   socialLinks                 Json?
   workExperience              Json?
-  // urls                        String[]
-  batch                       String   @default("")
+  batch                       String?   
   status                      STATUS   @default(PENDING)
   user                        User     @relation(fields: [userId], references: [id])
   createdAt                   DateTime @default(now())

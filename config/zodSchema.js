@@ -3,6 +3,7 @@ import { z } from "zod";
 export const signUpSchema = z.object({
   username: z
     .string()
+    .regex(/^[A-Za-z]+$/, "Only letters are allowed")
     .min(3, { message: "Username muust be atleast 3 character" })
     .max(15, { message: "Username must be less than 15 character" }),
   email: z
@@ -44,24 +45,25 @@ export const resetPasswordSchema = z.object({
 
 export const baseProfileSchema = z
   .object({
-    enrolmentNumber: z.string().regex(/^\d+$/, "Only numbers are allowed").optional(),
+    enrollmentNumber: z.string().regex(/^\d+$/, "Only numbers are allowed").optional(),
     skills: z.array(z.string().regex(
         /^[a-zA-Z0-9,\s]+$/,
         "Skills must be plain text with letters, numbers, and commas only"
-      )).optional(),
+      ).transform((str) => str.trim())).optional(),
 
     basic: z
       .object({
         firstName: z.string().regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed").nonempty("First name is required").optional(),
-        lastName: z.string().regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed").optional(),
+        lastName: z.string().regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed").nonempty("last name is requried").optional(),
         username: z.string().regex(/^[A-Za-z]+$/, "Only letters are allowed").nonempty("Username is required").optional(),
         email: z.string().email("Invalid email address").optional(),
         mobile: z.string().regex(/^\d{10}$/, "Mobile number must be exactly 10 digits").optional(),
         gender: z.enum(["male", "female", "other"]).optional(),
         userType: z.enum(["ALUMNI", "STUDENT"]).optional(),
-        course: z.string().nonempty("Course is required").optional(),
+        course: z.string().regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed").nonempty("Course is required").optional(),
         courseSpecialization: z
           .string()
+          .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")
           .nonempty("Course specialization is required")
           .optional(),
       })
@@ -83,14 +85,16 @@ export const baseProfileSchema = z
 
     education: z
       .object({
-        course: z.string().nonempty("Course is required").optional(),
+        course: z.string().regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed").nonempty("Course is required").optional(),
         qualification: z
           .string()
+          .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")
           .nonempty("Qualification is required")
           .optional(),
-        college: z.string().nonempty("College name is required").optional(),
+        college: z.string().regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed").nonempty("College name is required").optional(),
         courseType: z
           .string()
+          .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")
           .nonempty("Course type cannot be empty")
           .optional(),
         percentage: z
@@ -105,16 +109,18 @@ export const baseProfileSchema = z
           .optional(),
         rollNumber: z
           .string()
+          .regex(/^\d+$/, "Only numbers are allowed")
           .nonempty("roll number can not be empty")
           .optional(),
         specialization: z
           .string()
+          .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")
           .nonempty("Course specialization is required")
           .optional(),
         duration: z
           .object({
-            startYear: z.string().nonempty("StartDate is required").optional(),
-            endYear: z.string().optional("End date is required").optional(),
+            startYear: z.string().regex(/^\d+$/, "Only numbers are allowed").nonempty("StartDate is required").optional(),
+            endYear: z.string().regex(/^\d+$/, "Only numbers are allowed").optional("End date is required").optional(),
           })
           .strict({
             message: "duration body contains invalid fields",
@@ -128,23 +134,31 @@ export const baseProfileSchema = z
 
     workExperience: z
       .object({
-        id: z.string(),
-        designation: z.string().nonempty("Designation is required").optional(),
+        id: z.string().regex(/^\d+$/, "Only numbers are allowed"),
+        designation: z.string().regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed").nonempty("Designation is required").optional(),
         organisation: z
           .string()
+          .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")
           .nonempty("Company name is required")
           .optional(),
         employmentType: z
           .string()
+          .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")
           .min(1, "Employment type is required")
           .optional(),
-        startDate: z.string().nonempty("StartDate is required").optional(),
-        endDate: z.string().nonempty("End date is required").optional(),
+        startDate: z.string().regex(/^\d+$/, "Only numbers are allowed").nonempty("StartDate is required").optional(),
+        endDate: z.string().regex(/^\d+$/, "Only numbers are allowed").nonempty("End date is required").optional(),
         currentlyWorking: z.boolean().optional(),
-        location: z.string().optional(),
+        location: z.string().regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed").optional(),
         remote: z.boolean().optional(),
-        skills: z.array(z.string()).optional(),
-        description: z.string().optional(),
+        skills: z.array(z.string().regex(
+          /^[a-zA-Z0-9,\s]+$/,
+          "Skills must be plain text with letters, numbers, and commas only"
+        )).optional(),
+        description: z.string().regex(
+          /^[a-zA-Z0-9,\s]+$/,
+          "Skills must be plain text with letters, numbers, and commas only"
+        ).optional(),
       })
       .strict({
         message: "request body contains invalid fields",

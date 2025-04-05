@@ -105,7 +105,7 @@ router.post("/", async (req, res) => {
     ];
 
     const regularFields = [
-      'enrolmentNumber', 'skills', 'profileCompletionPercentage',
+      'enrollmentNumber', 'skills', 'profileCompletionPercentage',
       'resume', 'about', 'banner', 'urls', 'batch', 'status'
     ];
 
