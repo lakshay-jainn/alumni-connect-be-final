@@ -84,7 +84,9 @@ export const baseProfileSchema = z
       .optional(),
 
     education: z
-      .object({
+    .record(
+      z.string(),
+      z.object({
         course: z.string().regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed").nonempty("Course is required").optional(),
         qualification: z
           .string()
@@ -121,21 +123,20 @@ export const baseProfileSchema = z
           .object({
             startYear: z.string().nonempty("StartDate is required").optional(),
             endYear: z.string().optional("End date is required").optional(),
-          })
-          .strict({
-            message: "duration body contains invalid fields",
-          })
-          .optional(),
-      })
-      .strict({
-        message: "request body contains invalid fields",
-      })
-      .optional(),
+          }).optional()
+      }).strict({
+        message: "Request body contains invalid fields"
+      })),
 
-    workExperience: z
-      .object({
-        id: z.string().regex(/^\d+$/, "Only numbers are allowed"),
-        designation: z.string().regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed").nonempty("Designation is required").optional(),
+      workExperience: z
+    .record(
+      z.string(), 
+      z.object({
+        designation: z
+          .string()
+          .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")
+          .nonempty("Designation is required")
+          .optional(),
         organisation: z
           .string()
           .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")
@@ -144,27 +145,36 @@ export const baseProfileSchema = z
         employmentType: z
           .string()
           .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")
-          .min(1, "Employment type is required")
+          .nonempty("Employment type is required")
           .optional(),
-        startDate: z.string().regex(/^\d+$/, "Only numbers are allowed").nonempty("StartDate is required").optional(),
-        endDate: z.string().regex(/^\d+$/, "Only numbers are allowed").nonempty("End date is required").optional(),
+        startDate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, "Start date must be in YYYY-MM-DD format")
+          .nonempty("Start date is required")
+          .optional(),
+        endDate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be in YYYY-MM-DD format")
+          .optional(),
         currentlyWorking: z.boolean().optional(),
-        location: z.string().regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed").optional(),
+        location: z
+          .string()
+          .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")
+          .optional(),
         remote: z.boolean().optional(),
-        skills: z.array(z.string().regex(
-          /^[a-zA-Z0-9,\s]+$/,
-          "Skills must be plain text with letters, numbers, and commas only"
-        )).optional(),
-        description: z.string().regex(
-          /^[a-zA-Z0-9,\s]+$/,
-          "Skills must be plain text with letters, numbers, and commas only"
-        ).optional(),
+        skills: z
+          .array(
+            z
+              .string()
+              .regex(/^[a-zA-Z0-9,\s]+$/, "Skills must be plain text with letters, numbers, and commas only")
+          )
+          .optional(),
+        description: z
+          .string()
+          .regex(/^[a-zA-Z0-9,\s]+$/, "Only letters, numbers, spaces, and commas are allowed")
+          .optional(),
       })
-      .strict({
-        message: "request body contains invalid fields",
-      })
-      .optional(),
-  })
-  .strict({
-    message: "request body contains invalid fields",
-  });
+    )
+    .optional()
+ })
+      

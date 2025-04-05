@@ -59,7 +59,7 @@ model Profile {
   profileCompletionPercentage String   @default("0")
   resume                      String?
   about                       String?
-  banner                      String?
+  banner                      String @default("https://static.licdn.com/aero-v1/sc/h/55k1z8997gh8dwtihm11aajyq")
   education                   Json?
   basic                       Json?
   accomplishments             Json?
