@@ -32,9 +32,9 @@ model User {
   password                   String
   role                       ROLE            @default(STUDENT)
   profileImage               String          @default("https://i.ibb.co/QFf9SC8/img-avatar.png")
-  created_at                 DateTime        @default(now())
   studentProfile             StudentProfile? // 1o1 with Student profile
-  alumniProfile              AlumniProfile? // 101 with alumni profile
+  alumniProfile              AlumniProfile?
+  profile                    Profile? // 101 with alumni profile
   sentConnectionRequests     Connection[]    @relation("SentConnections")
   receivedConnectionRequests Connection[]    @relation("ReceivedConnections")
   communities                Community[]     @relation("CommunityMembers")
@@ -43,14 +43,22 @@ model User {
   commentLikes               CommentLike[]
   comments                   Comment[]
 
+  createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([role])
+  @@index([email])
+  @@index([id])
 }
 
-model StudentProfile {
+// scope of improvent is to merge this two feilds
+
+model Profile {
   userId                      String   @id @unique
-  enrollmentNumber             String?
+  enrollmentNumber            String?
+  role                        ROLE?
   skills                      String[]
-  profileCompletionPercentage String @default("0")
+  profileCompletionPercentage String   @default("0")
   resume                      String?
   about                       String?
   banner                      String?
@@ -60,7 +68,31 @@ model StudentProfile {
   personalDetails             Json?
   socialLinks                 Json?
   workExperience              Json?
-  batch                       String?   
+  batch                       String?
+  status                      STATUS   @default(PENDING)
+  user                        User     @relation(fields: [userId], references: [id])
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @default(now()) @updatedAt
+
+  @@index([batch])
+  @@index([status])
+}
+
+model StudentProfile {
+  userId                      String   @id @unique
+  enrollmentNumber            String?
+  skills                      String[]
+  profileCompletionPercentage String   @default("0")
+  resume                      String?
+  about                       String?
+  banner                      String?
+  education                   Json?
+  basic                       Json?
+  accomplishments             Json?
+  personalDetails             Json?
+  socialLinks                 Json?
+  workExperience              Json?
+  batch                       String?
   status                      STATUS   @default(PENDING)
   user                        User     @relation(fields: [userId], references: [id])
   createdAt                   DateTime @default(now())
@@ -69,9 +101,9 @@ model StudentProfile {
 
 model AlumniProfile {
   userId                      String   @id @unique
-  enrollmentNumber             String?
+  enrollmentNumber            String?
   skills                      String[]
-  profileCompletionPercentage String @default("0")
+  profileCompletionPercentage String   @default("0")
   resume                      String?
   about                       String?
   banner                      String?
@@ -81,7 +113,7 @@ model AlumniProfile {
   personalDetails             Json?
   socialLinks                 Json?
   workExperience              Json?
-  batch                       String?   
+  batch                       String?
   status                      STATUS   @default(PENDING)
   user                        User     @relation(fields: [userId], references: [id])
   createdAt                   DateTime @default(now())
@@ -120,6 +152,7 @@ model Connection {
 
   @@unique([senderId, receiverId])
   @@index([senderId, receiverId])
+  @@index([status])
 }
 
 model Community {
@@ -140,9 +173,13 @@ model Post {
   commentCount Int        @default(0)
   likes        PostLike[]
   comments     Comment[]
-  createdAt    DateTime   @default(now())
   Community    Community? @relation(fields: [communityId], references: [id])
   communityId  String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+
+  @@index([communityId])
+  @@index([userId])
 }
 
 model Comment {
@@ -154,6 +191,8 @@ model Comment {
   userId     String
   likesCount Int           @default(0)
   likes      CommentLike[]
+
+  @@index([postId])
 }
 
 model PostLike {
@@ -164,6 +203,8 @@ model PostLike {
   post   Post   @relation(fields: [postId], references: [id])
 
   @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
 }
 
 model CommentLike {
@@ -174,4 +215,6 @@ model CommentLike {
   Comment   Comment @relation(fields: [commentId], references: [id])
 
   @@unique([userId, commentId])
+  @@index([userId])
+  @@index([commentId])
 }

@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { prisma } from "../../../libs/prisma.js";
+
 const router = Router();
 
 router.get("/", (_, res) => {
@@ -9,9 +10,16 @@ router.get("/", (_, res) => {
 
 router.get("/pending", async (_, res) => {
   try {
-    const students = await prisma.studentProfile.findMany({
+    const data = await prisma.profile.findMany({
       where: {
-        status: "PENDING",
+        AND: [
+          { status: "PENDING" },
+          {
+            user: {
+              role: { not: "ADMIN" },
+            },
+          },
+        ],
       },
       include: {
         user: {
@@ -19,37 +27,24 @@ router.get("/pending", async (_, res) => {
             id: true,
             username: true,
             profileImage: true,
-            email: true
-          },
-        },
-        orderBy: {
-          createdAt: "desc"
-        }
-      },
-    });
-
-    const alumni = await prisma.alumniProfile.findMany({
-      where: {
-        status: "PENDING",
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            profileImage: true,
-            email: true
+            email: true,
+            role: true,
           },
         },
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
-    const response = [
-      ...students.map((student) => ({ ...student, type: "student" })),
-      ...alumni.map((alumni) => ({ ...alumni, type: "alumni" })),
-    ];
+    const resData = data.map((profile) => {
+      return {
+        ...profile,
+        type: profile.user.role,
+      };
+    });
 
-    res.status(200).json(response);
+    res.status(200).json(resData);
   } catch (error) {
     res
       .status(500)
@@ -57,7 +52,7 @@ router.get("/pending", async (_, res) => {
   }
 });
 
-router.post("/action/student", async (req, res) => {
+router.post("/action", async (req, res) => {
   try {
     const { action, userId } = req.body;
 
@@ -65,7 +60,7 @@ router.post("/action/student", async (req, res) => {
       return res.status(400).json({ message: "Action not allowed" });
     }
 
-    const updatedStudent = await prisma.studentProfile.update({
+    const update = await prisma.profile.update({
       where: { userId },
       data: {
         status: action,
@@ -76,57 +71,25 @@ router.post("/action/student", async (req, res) => {
             id: true,
             username: true,
             profileImage: true,
-            email: true
+            email: true,
           },
         },
       },
     });
-    return res.status(201).json({updatedStudent, message: "Action Performed successfully"});
-
-    // Integrate mail service
-
-    // Have to change the listing alumni
+    return res
+      .status(201)
+      .json({ update, message: "Action Performed successfully" });
   } catch (error) {
     return res.status(500).json({ message: `FAiled ${action}` });
   }
 });
 
-router.post("/action/alumni", async (req, res) => {
-  try {
-    const { action, userId } = req.body;
-
-    if (!["ACCEPTED", "REJECTED"].includes(action)) {
-      return res.status(400).json({ message: "Action not allowed" });
-    }
-
-    const updatedAlumni = await prisma.alumniProfile.update({
-      where: { userId },
-      data: {
-        status: action,
-      },
-      include: {
-        user: {
-          select: {
-            username: true,
-            profileImage: true,
-          },
-        },
-      },
-    });
-    return res.status(201).json({updatedAlumni, message: "Action Performed successfully"});
-
-    // Integrate mail service
-  } catch (error) {
-    return res.status(500).json({ message: `Failed ${action}` });
-  }
-});
-
 router.get("/history", async (_, res) => {
   try {
-    const students = await prisma.studentProfile.findMany({
+    const profile = await prisma.profile.findMany({
       where: {
-        NOT: {
-          status: "PENDING",
+        status: {
+          not: "PENDING",
         },
       },
       include: {
@@ -135,27 +98,8 @@ router.get("/history", async (_, res) => {
             id: true,
             username: true,
             profileImage: true,
-            email: true
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    const alumnis = await prisma.alumniProfile.findMany({
-      where: {
-        NOT: {
-          status: "PENDING",
-        },
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            profileImage: true,
-            email: true
+            email: true,
+            role: true,
           },
         },
       },
@@ -164,60 +108,57 @@ router.get("/history", async (_, res) => {
       },
     });
 
-    return res
-      .status(200)
-      .json([
-        ...students.map((s) => ({ ...s, type: "student" })),
-        ...alumnis.map((a) => ({ ...a, type: "alumni" })),
-      ]);
+    const resData = profile.map((profile) => {
+      return {
+        ...profile,
+        type: profile.user.role,
+      };
+    });
+
+    return res.status(200).json(resData);
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Failed to get history please try again",
-        error: error.message,
-        e: error,
-      });
+    return res.status(500).json({
+      message: "Failed to get history please try again",
+      error: error.message,
+      e: error,
+    });
   }
 });
 
 router.get("/count", async (_, res) => {
   try {
-    const studentCount = await prisma.studentProfile.count({
+    const studentCount = await prisma.profile.count({
       where: {
-        NOT: {
-          OR: [{ status: "PENDING" }, { status: "REJECTED" }],
+        role: "STUDENT",
+        status: {
+          in: ["ACCEPTED"],
         },
       },
     });
 
-    const alumniCount = await prisma.alumniProfile.count({
+    const alumniCount = await prisma.profile.count({
       where: {
-        NOT: {
-          OR:[{status:"PENDING"},{status:"REJECTED"}]
+        role: "ALUMNI",
+        status: {
+          in: ["ACCEPTED"],
         },
       },
     });
 
-    const pendingStudents = await prisma.studentProfile.count({
+    const pendings = await prisma.profile.count({
       where: {
+        role: {
+          in: ["STUDENT", "ALUMNI"],
+        },
         status: "PENDING",
       },
     });
 
-    const pendingAlumni = await prisma.alumniProfile.count({
-      where: {
-        status: "PENDING",
-      },
+    return res.status(200).json({
+      pendingRequests: pendings,
+      studentCount,
+      alumniCount,
     });
-
-    return res
-      .status(200)
-      .json({
-        pendingRequests: pendingStudents + pendingAlumni,
-        studentCount,
-        alumniCount,
-      });
   } catch (error) {
     return res.status(500).json({ message: "Failed to get count" });
   }
@@ -226,27 +167,25 @@ router.get("/count", async (_, res) => {
 router.post("/add", async (req, res) => {
   try {
     const {
-      username,
-      email,
-      isAlumni,
-      enrolmentNumber,
-      batch,
-      firstName,
-      lastName,
-      gender,
-      course,
-      startYear,
-      endYear,
-      college
+        email,
+        isAlumni,
+        enrolmentNumber,
+        batch,
+        firstName,
+        lastName,
+        gender,
+        course,
+        startYear,
+        endYear,
     } = req.body;
 
-    const alreadyUserWithEmailAndUsername = await prisma.user.findFirst({
+    const alreadyUser = await prisma.user.findFirst({
       where: {
-        OR: [{ email }, { username }],
+        email
       },
     });
 
-    if (alreadyUserWithEmailAndUsername) {
+    if (alreadyUser) {
       return res
         .status(400)
         .json({ message: "User already exists with same email or username" });
@@ -254,36 +193,32 @@ router.post("/add", async (req, res) => {
 
     const user = await prisma.user.create({
       data: {
-        username,
+        username: enrolmentNumber,
         email,
         password: enrolmentNumber,
         role: isAlumni ? "ALUMNI" : "STUDENT",
       },
     });
 
-    const profileSelect = !isAlumni ? "studentProfile" : "alumniProfile";
-
-      await prisma[profileSelect].create({
-        data: {
-          userId: user.id,
-          status: "PENDING",
-          enrolmentNumber,
-          batch,
-          basic: {
-            firstName,
-            lastName,
-            gender,
-            course,
-            courseDuration: {
-              startYear,
-              endYear,
-            },
-            college
-          }
+    await prisma.profile.create({
+      data: {
+        userId: user.id,
+        status: "ACCEPTED",
+        enrolmentNumber,
+        batch,
+        basic: {
+          firstName,
+          lastName,
+          gender,
+          course,
+          courseDuration: {
+            startYear,
+            endYear,
+          },
         },
-      });
-    
-    return res.status(201).json({user, message: "user added successfully"});
+      },
+    });
+    return res.status(201).json({ user, message: "user added successfully" });
   } catch (error) {
     return res
       .status(500)
@@ -293,7 +228,15 @@ router.post("/add", async (req, res) => {
 
 router.post("/event", async (req, res) => {
   try {
-    const { title, description, time, location, importantLinks,eventImage,eventData  } = req.body;
+    const {
+      title,
+      description,
+      time,
+      location,
+      importantLinks,
+      eventImage,
+      eventData,
+    } = req.body;
 
     const event = await prisma.events.create({
       data: {
@@ -303,13 +246,15 @@ router.post("/event", async (req, res) => {
         location,
         importantLinks,
         eventImage,
-        eventData
+        eventData,
       },
     });
 
-    return res.status(201).json({event, message: "Event added successfully"});
+    return res.status(201).json({ event, message: "Event added successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to add event" , error:error.message ,e : error});
+    return res
+      .status(500)
+      .json({ message: "Failed to add event", error: error.message, e: error });
   }
 });
 
@@ -320,34 +265,54 @@ router.get("/event", async (_, res) => {
         createdAt: "desc",
       },
     });
-    return res.status(200).json({events, message: "Events fetched successfully"});
+    return res
+      .status(200)
+      .json({ events, message: "Events fetched successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to get events", error, e: error.message });
+    return res
+      .status(500)
+      .json({ message: "Failed to get events", error, e: error.message });
   }
 });
 
 router.delete("/event/delete", async (req, res) => {
   try {
     const { id } = req.body;
-    console.log(id)
+    console.log(id);
     const event = await prisma.events.delete({
       where: {
-        id
+        id,
       },
     });
-    return res.status(200).json({event, message: "Event deleted successfully"});
+    return res
+      .status(200)
+      .json({ event, message: "Event deleted successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to delete event" , error:error.message ,e : error});
+    return res
+      .status(500)
+      .json({
+        message: "Failed to delete event",
+        error: error.message,
+        e: error,
+      });
   }
 });
 
 router.patch("/event/edit", async (req, res) => {
   try {
-    const { id, title, description, time, location, importantLinks,eventImage } = req.body;
+    const {
+      id,
+      title,
+      description,
+      time,
+      location,
+      importantLinks,
+      eventImage,
+    } = req.body;
 
     const event = await prisma.events.update({
       where: {
-        id
+        id,
       },
       data: {
         title,
@@ -355,13 +320,21 @@ router.patch("/event/edit", async (req, res) => {
         time,
         location,
         importantLinks,
-        eventImage
+        eventImage,
       },
     });
 
-    return res.status(200).json({event, message: "Event updated successfully"});
+    return res
+      .status(200)
+      .json({ event, message: "Event updated successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to update event" , error:error.message ,e : error});
+    return res
+      .status(500)
+      .json({
+        message: "Failed to update event",
+        error: error.message,
+        e: error,
+      });
   }
 });
 
@@ -377,9 +350,17 @@ router.post("/crousel", async (req, res) => {
         image,
       },
     });
-    return res.status(201).json({crousel, message: "Crousel added successfully"});
+    return res
+      .status(201)
+      .json({ crousel, message: "Crousel added successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to add crousel" , error:error.message ,e : error});
+    return res
+      .status(500)
+      .json({
+        message: "Failed to add crousel",
+        error: error.message,
+        e: error,
+      });
   }
 });
 
@@ -390,9 +371,17 @@ router.get("/crousel", async (_, res) => {
         createdAt: "desc",
       },
     });
-    return res.status(200).json({crousel, message: "Crousel fetched successfully"});
+    return res
+      .status(200)
+      .json({ crousel, message: "Crousel fetched successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to get crousel" , error:error.message ,e : error});
+    return res
+      .status(500)
+      .json({
+        message: "Failed to get crousel",
+        error: error.message,
+        e: error,
+      });
   }
 });
 
@@ -401,12 +390,20 @@ router.delete("/crousel/delete", async (req, res) => {
     const { id } = req.body;
     const crousel = await prisma.crousel.delete({
       where: {
-        id
+        id,
       },
     });
-    return res.status(200).json({crousel, message: "Crousel deleted successfully"});
+    return res
+      .status(200)
+      .json({ crousel, message: "Crousel deleted successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to delete crousel" , error:error.message ,e : error});
+    return res
+      .status(500)
+      .json({
+        message: "Failed to delete crousel",
+        error: error.message,
+        e: error,
+      });
   }
 });
 
@@ -416,7 +413,7 @@ router.patch("/crousel/edit", async (req, res) => {
 
     const crousel = await prisma.crousel.update({
       where: {
-        id
+        id,
       },
       data: {
         batch,
@@ -426,9 +423,17 @@ router.patch("/crousel/edit", async (req, res) => {
       },
     });
 
-    return res.status(200).json({crousel, message: "Crousel updated successfully"});
+    return res
+      .status(200)
+      .json({ crousel, message: "Crousel updated successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to update crousel" , error:error.message ,e : error});
+    return res
+      .status(500)
+      .json({
+        message: "Failed to update crousel",
+        error: error.message,
+        e: error,
+      });
   }
 });
 

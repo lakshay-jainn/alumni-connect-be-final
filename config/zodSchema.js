@@ -119,8 +119,8 @@ export const baseProfileSchema = z
           .optional(),
         duration: z
           .object({
-            startYear: z.string().regex(/^\d+$/, "Only numbers are allowed").nonempty("StartDate is required").optional(),
-            endYear: z.string().regex(/^\d+$/, "Only numbers are allowed").optional("End date is required").optional(),
+            startYear: z.string().nonempty("StartDate is required").optional(),
+            endYear: z.string().optional("End date is required").optional(),
           })
           .strict({
             message: "duration body contains invalid fields",

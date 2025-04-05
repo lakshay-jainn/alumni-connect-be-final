@@ -13,8 +13,7 @@ router.get("/", async (req, res) => {
         id: userId,
       },
       include: {
-        studentProfile: role === "STUDENT" ? true : false,
-        alumniProfile: role === "ALUMNI" ? true : false,
+        profile: true
       },
     });
 
@@ -22,43 +21,44 @@ router.get("/", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const profileSelect =
-      role === "STUDENT" ? "studentProfile" : "alumniProfile";
+    console.log("24",user)
+
+    const profile = "profile";
 
     const response = {
       email: user.email,
       profileImage: user.profileImage,
       username: user.username,
       profileCompletionPercentage:
-        user[profileSelect].profileCompletionPercentage,
-      banner: user[profileSelect].banner,
+        user[profile].profileCompletionPercentage,
+      banner: user[profile].banner,
 
       //Basic
-      basic: {...user[profileSelect].basic, userType: role},
+      basic: {...user[profile].basic, userType: role},
 
       // resume
-      resume: user[profileSelect].resume,
+      resume: user[profile].resume,
 
       //about
-      about: user[profileSelect].about,
+      about: user[profile].about,
 
       // Skiils
-      skills: user[profileSelect].skills,
+      skills: user[profile].skills,
 
       //Education
-      education: user[profileSelect].education,
+      education: user[profile].education,
 
       //Work Experience
-      workExperience: user[profileSelect].workExperience,
+      workExperience: user[profile].workExperience,
 
       //Achievements
-      accomplishments: user[profileSelect].accomplishments,
+      accomplishments: user[profile].accomplishments,
 
       //personal details
-      personalDetails: user[profileSelect].personalDetails,
+      personalDetails: user[profile].personalDetails,
 
       //social links
-      socialLinks: user[profileSelect].socialLinks,
+      socialLinks: user[profile].socialLinks,
 
       //
     };
@@ -70,7 +70,6 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const userId = req.user.id;
-  const role = req.user.role;
 
   const updates = req.body;
 
@@ -92,8 +91,7 @@ router.post("/", async (req, res) => {
 
 
   try {
-    const profileSelect =
-      role === "STUDENT" ? "studentProfile" : "alumniProfile";
+    const profile = "profile";
 
     const jsonFields = [
       "basic",
@@ -114,7 +112,7 @@ router.post("/", async (req, res) => {
       Object.entries(validation.data).filter(([_, v]) => v !== undefined)
     );
 
-    const existingProfile = await prisma[profileSelect].findUnique({
+    const existingProfile = await prisma[profile].findUnique({
       where: { userId },
     });
 
@@ -140,7 +138,7 @@ router.post("/", async (req, res) => {
       }
     });
 
-    const updatedUser = await prisma[profileSelect].update({
+    const updatedUser = await prisma[profile].update({
       where: { userId },
       data: updateData,
     });
@@ -157,25 +155,4 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.post("/completion",async (req,res) => {
-  const userId = req.user.id;
-  const role = req.user.role;
-  const { profileCompletionPercentage } = req.body;
-
-  try {
-    const profileSelect =
-      role === "STUDENT" ? "studentProfile" : "alumniProfile";
-    
-      const updateComplettion = await prisma[profileSelect].update({
-        where: { userId },
-        data: {
-          profileCompletionPercentage,
-        },
-      });
-
-      return res.status(200).json(updateComplettion.profileCompletionPercentage);
-  } catch (error) {
-    return res.status(500).json({ message: "Internal server Error", err: error.message });
-  }
-})
 export default router;
