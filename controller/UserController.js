@@ -12,7 +12,7 @@ export async function handleUserSignupController(req, res) {
 
     const validatedBody = signUpSchema.parse(req.body);
 
-    const { username, email, password, isAlumni } = validatedBody;
+    const { username, email, password, isAlumni,firstName, lastName } = validatedBody;
 
     const exsistingUserByEmail = await prisma.user.findUnique({
       where: {
@@ -52,6 +52,10 @@ export async function handleUserSignupController(req, res) {
       data: {
         userId: user.id,
         role: isAlumni ? "ALUMNI" : "STUDENT",
+        basic: {
+          firstName,
+          lastName
+        }
       },
     })
 

@@ -278,7 +278,6 @@ router.get("/event", async (_, res) => {
 router.delete("/event/delete", async (req, res) => {
   try {
     const { id } = req.body;
-    console.log(id);
     const event = await prisma.events.delete({
       where: {
         id,

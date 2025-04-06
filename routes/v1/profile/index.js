@@ -75,8 +75,6 @@ router.post("/", async (req, res) => {
 
   const validation = baseProfileSchema.safeParse(updates);
 
-  console.log("79", validation);
-
   if (!validation.success) {
     const errors = validation.error.errors.map(err => ({
       field: err.path.join('.'),

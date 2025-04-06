@@ -9,6 +9,7 @@ import postRoutes from "./v1/post/index.js"
 import communityRoutes from "./v1/community/index.js"
 import { checkForAuthentication , restrictToOnly } from "../middlewares/auth.js";
 import { authLimiter } from "../config/rateLimiter.js";
+import  dashboardRoutes  from "./v1/page/dashboard.js";
 // import { seed } from "../services/seed.js";
 const router = Router()
 
@@ -23,6 +24,7 @@ router.use("/v1/connection",checkForAuthentication , connectionRoutes)
 router.use("/v1/posts", checkForAuthentication,postRoutes)
 router.use("/v1/community",checkForAuthentication,communityRoutes);
 router.use("/v1/handle-media",checkForAuthentication , mediaRoutes);
+router.use("/v1/dashboard",checkForAuthentication , dashboardRoutes);
 
 
 

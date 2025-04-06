@@ -32,7 +32,7 @@ model User {
   password                   String
   role                       ROLE            @default(STUDENT)
   profileImage               String          @default("https://i.ibb.co/QFf9SC8/img-avatar.png")
-  profile                    Profile? // 101 with alumni profile
+  profile                    Profile?        // 101 with alumni profile
   sentConnectionRequests     Connection[]    @relation("SentConnections")
   receivedConnectionRequests Connection[]    @relation("ReceivedConnections")
   communities                Community[]     @relation("CommunityMembers")
@@ -48,8 +48,6 @@ model User {
   @@index([email])
   @@index([id])
 }
-
-// scope of improvent is to merge this two feilds
 
 model Profile {
   userId                      String   @id @unique
@@ -81,7 +79,7 @@ model Events {
   id             String   @id @default(uuid())
   title          String?
   description    String?
-  time           String?
+  time           String
   location       String?
   importantLinks String[]
   eventImage     String?
@@ -98,6 +96,7 @@ model Carousel {
   createdAt   DateTime @default(now())
 }
 
+
 model Connection {
   id         String   @id @default(uuid())
   senderId   String
@@ -109,6 +108,9 @@ model Connection {
 
   @@unique([senderId, receiverId])
   @@index([senderId, receiverId])
+  @@index([senderId,status])
+  @@index([receiverId,status])
+
   @@index([status])
 }
 
@@ -148,6 +150,8 @@ model Comment {
   userId     String
   likesCount Int           @default(0)
   likes      CommentLike[]
+
+  createdAt DateTime @default(now())
 
   @@index([postId])
 }
