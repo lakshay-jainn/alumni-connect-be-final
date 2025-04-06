@@ -84,9 +84,21 @@ export async function handleUserLoginController(req, res) {
       where: {
         email: email,
       },
+      include: {
+        profile:{
+          select: {
+            status: true,
+          }
+        }
+      }
     });
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.profile.status !== "ACCEPTED") {
+      return res.status(400).json({ message: "Your profile is not accepted yet once it is done an email will be sent to you" });
     }
 
     const isPasswordvalid = await compare(password, user.password);

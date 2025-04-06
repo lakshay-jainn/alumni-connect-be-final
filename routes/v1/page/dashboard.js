@@ -44,7 +44,7 @@ router.get("/", async (req, res) => {
         
         const userProfile = await prisma.profile.findUnique({
             where: {
-                userId
+                userId,
             },
             select: {
                 basic: true,
