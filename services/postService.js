@@ -70,6 +70,7 @@ export async function getPosts(userId, skip = 0, take = 15) {
 
 export async function likeDislikePost(userId, postId) {
   return await prisma.$transaction(async (prisma) => {
+
     const existingLike = await prisma.postLike.findUnique({
       where: {
         userId_postId: {
@@ -113,7 +114,8 @@ export async function likeDislikePost(userId, postId) {
     })
 
     return { isLiked: true };
-  });
+  }
+);
 }
 
 export async function createComment(userId, postId, content) {
@@ -179,55 +181,57 @@ export async function getComments(userId, postId, skip = 0, take = 3) {
 }
 
 export async function likeDislikeComment(userId, commentId) {
-  const like = await prisma.commentLike.findFirst({
-    where: {
-      userId,
-      commentId,
-    },
-  });
-
-  if (like) {
-    await prisma.commentLike.delete({
+  return await prisma.$transaction( async (prisma) => {
+    const like = await prisma.commentLike.findFirst({
       where: {
-        id: like.id,
+        userId,
+        commentId,
       },
     });
-
+  
+    if (like) {
+      await prisma.commentLike.delete({
+        where: {
+          id: like.id,
+        },
+      });
+  
+      await prisma.comment.update({
+        where: {
+          id: commentId,
+        },
+        data: {
+          likesCount: {
+            decrement: 1,
+          },
+        },
+      });
+  
+      return {
+        isLiked: false,
+      };
+    }
+  
+    await prisma.commentLike.create({
+      data: {
+        userId,
+        commentId,
+      },
+    });
+  
     await prisma.comment.update({
       where: {
         id: commentId,
       },
       data: {
         likesCount: {
-          decrement: 1,
+          increment: 1,
         },
       },
     });
-
+  
     return {
-      isLiked: false,
+      isLiked: true,
     };
-  }
-
-  await prisma.commentLike.create({
-    data: {
-      userId,
-      commentId,
-    },
-  });
-
-  await prisma.comment.update({
-    where: {
-      id: commentId,
-    },
-    data: {
-      likesCount: {
-        increment: 1,
-      },
-    },
-  });
-
-  return {
-    isLiked: true,
-  };
+  })
 }

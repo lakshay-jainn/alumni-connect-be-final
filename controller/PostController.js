@@ -137,7 +137,9 @@ export async function createCommentController(req, res) {
 
 export async function getCommentController(req, res) {
   const userId = req.user.id;
-  const { postId, skip, take } = req.params;
+  let { postId, skip, take } = req.query;
+  skip = parseInt(skip) || 0;
+  take = parseInt(take) || 5;
 
   try {
     const comments = await getComments(userId, postId, skip, take);
