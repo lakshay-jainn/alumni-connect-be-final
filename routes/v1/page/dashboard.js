@@ -4,6 +4,7 @@ const router = Router();
 
 router.get("/", async (req, res) => {
     const userId = req.user.id;
+    const role = req.user.role;
     
     try {
         const connectionLength = await prisma.connection.count({
@@ -49,16 +50,16 @@ router.get("/", async (req, res) => {
             select: {
                 basic: true,
                 batch: true,
-                role: true
             }
         }); 
 
 
         const profile = {
-            role: userProfile.role,
+            role,
             firstName: userProfile.basic.firstName,
             lastName: userProfile.basic.lastName,
             course: userProfile.basic.course,
+            courseSpecialization: userProfile.basic.courseSpecialization,
             batch: userProfile.batch
         }
 

@@ -20,8 +20,7 @@ export const signUpSchema = z.object({
   firstName: z
     .string()
     .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")
-    .nonempty("First name is required")
-    .optional(),
+    .nonempty("First name is required"),
   lastName: z
     .string()
     .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")

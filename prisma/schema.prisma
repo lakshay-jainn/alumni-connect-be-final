@@ -52,7 +52,6 @@ model User {
 model Profile {
   userId                      String   @id @unique
   enrollmentNumber            String?
-  role                        ROLE?
   skills                      String[]
   profileCompletionPercentage String   @default("0")
   resume                      String?

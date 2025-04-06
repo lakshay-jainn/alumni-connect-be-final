@@ -172,6 +172,9 @@ export async function getComments(userId, postId, skip = 0, take = 3) {
         },
       },
     },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
   return comments.map((comment) => ({

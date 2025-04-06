@@ -44,6 +44,8 @@ router.get("/pending", async (_, res) => {
       };
     });
 
+    console.log(resData)
+
     res.status(200).json(resData);
   } catch (error) {
     res
