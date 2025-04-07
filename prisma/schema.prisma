@@ -69,7 +69,7 @@ model Profile {
   @@index([userId,status])
 }
 
-
+  
 model Events {
   id             String   @id @default(uuid())
   title          String?
