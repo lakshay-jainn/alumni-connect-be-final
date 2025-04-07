@@ -44,9 +44,6 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  @@index([role])
-  @@index([email])
-  @@index([id])
 }
 
 model Profile {
@@ -65,12 +62,11 @@ model Profile {
   workExperience              Json?
   batch                       String?
   status                      STATUS   @default(PENDING)
-  user                        User     @relation(fields: [userId], references: [id])
+  user                        User     @relation(fields: [userId], references: [id] , onDelete: Cascade)
   createdAt                   DateTime @default(now())
   updatedAt                   DateTime @default(now()) @updatedAt
 
-  @@index([batch])
-  @@index([status])
+  @@index([userId,status])
 }
 
 
@@ -99,9 +95,9 @@ model Carousel {
 model Connection {
   id         String   @id @default(uuid())
   senderId   String
-  sender     User     @relation("SentConnections", fields: [senderId], references: [id])
+  sender     User     @relation("SentConnections", fields: [senderId], references: [id],onDelete: Cascade)
   receiverId String
-  receiver   User     @relation("ReceivedConnections", fields: [receiverId], references: [id])
+  receiver   User     @relation("ReceivedConnections", fields: [receiverId], references: [id],onDelete: Cascade)
   status     STATUS   @default(PENDING)
   createdAt  DateTime @default(now())
 
@@ -109,8 +105,6 @@ model Connection {
   @@index([senderId, receiverId])
   @@index([senderId,status])
   @@index([receiverId,status])
-
-  @@index([status])
 }
 
 model Community {
@@ -126,7 +120,7 @@ model Post {
   content      String     @default("")
   caption      String     @default("")
   userId       String
-  user         User       @relation(fields: [userId], references: [id])
+  user         User       @relation(fields: [userId], references: [id],onDelete: Cascade)
   likesCount   Int        @default(0)
   commentCount Int        @default(0)
   likes        PostLike[]
@@ -136,45 +130,40 @@ model Post {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @default(now()) @updatedAt
 
-  @@index([communityId])
-  @@index([userId])
+  @@index([createdAt(desc)])
 }
 
 model Comment {
   id         String        @id @default(uuid())
   comment    String
-  post       Post          @relation(fields: [postId], references: [id])
+  post       Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId     String
-  user       User          @relation(fields: [userId], references: [id])
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
   likesCount Int           @default(0)
   likes      CommentLike[]
 
   createdAt DateTime @default(now())
 
-  @@index([postId])
+  @@index([createdAt(desc)])
 }
 
 model PostLike {
   id     String @id @default(uuid())
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id],onDelete: Cascade)
   postId String
-  post   Post   @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
-  @@index([userId])
-  @@index([postId])
 }
 
 model CommentLike {
   id        String  @id @default(uuid())
   userId    String
-  user      User    @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id],onDelete: Cascade)
   commentId String
-  Comment   Comment @relation(fields: [commentId], references: [id])
+  Comment   Comment @relation(fields: [commentId], references: [id],onDelete: Cascade)
 
   @@unique([userId, commentId])
-  @@index([userId])
-  @@index([commentId])
 }

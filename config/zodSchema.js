@@ -35,7 +35,7 @@ export const signInSchema = z.object({
     .transform((email) => email.toLowerCase()),
   password: z
     .string()
-    .min(6, { message: "Password must be atleast 6 character" })
+    .min(5, { message: "Password must be atleast 6 character" })
     .max(20, { message: "Password must be less than 20 character" }),
 });
 

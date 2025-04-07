@@ -3,6 +3,7 @@ import { generateResetToken, setUser, verifyResetToken } from "../services/jwt.j
 import { compare, hash } from "bcrypt";
 import { sendEmail } from "../services/email.js";
 import { signUpSchema,signInSchema,forgetPasswordSchema, resetPasswordSchema} from "../config/zodSchema.js";
+import e from "cors";
 
 export async function handleUserSignupController(req, res) {
   try {
@@ -51,7 +52,6 @@ export async function handleUserSignupController(req, res) {
     await prisma.profile.create({
       data: {
         userId: user.id,
-        role: isAlumni ? "ALUMNI" : "STUDENT",
         basic: {
           firstName,
           lastName
@@ -110,7 +110,7 @@ export async function handleUserLoginController(req, res) {
 
     res.status(200).json({ token });
   } catch (error) {
-    res.status(500).json({ message: "Something went wrong from our side" });
+    res.status(500).json({ message: "Something went wrong from our side" , error: error.message});
   }
 }
 
