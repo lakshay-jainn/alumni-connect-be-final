@@ -50,7 +50,12 @@ router.get("/", async (req, res) => {
             select: {
                 basic: true,
                 batch: true,
-            }
+                user: {
+                    select: {
+                        profileImage: true,
+                    }
+                }
+            },
         }); 
 
 
@@ -60,7 +65,8 @@ router.get("/", async (req, res) => {
             lastName: userProfile.basic.lastName,
             course: userProfile.basic.course,
             courseSpecialization: userProfile.basic.courseSpecialization,
-            batch: userProfile.batch
+            batch: userProfile.batch,
+            profileImage: userProfile.user.profileImage,
         }
 
         const yourNetworks = {

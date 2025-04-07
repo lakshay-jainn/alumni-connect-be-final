@@ -58,8 +58,8 @@ export async function handleUserSignupController(req, res) {
       },
     })
 
-    const token = setUser(user);
-    res.status(201).json({ token, message: "User succesfully registered" });
+    setUser(user);
+    res.status(201).json({ message: "User succesfully registered please wait till it gets verified u will be notified via email" });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -96,14 +96,15 @@ export async function handleUserLoginController(req, res) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.profile.status !== "ACCEPTED") {
-      return res.status(400).json({ message: "Your profile is not accepted yet once it is done an email will be sent to you" });
-    }
-
+    
     const isPasswordvalid = await compare(password, user.password);
-
+    
     if (!isPasswordvalid) {
       return res.status(400).json({ message: "Incorrect password" });
+    }
+    
+    if (user.profile.status !== "ACCEPTED") {
+      return res.status(400).json({ message: "Your profile is not accepted yet once it is done an email will be sent to you" });
     }
     const token = setUser(user);
 

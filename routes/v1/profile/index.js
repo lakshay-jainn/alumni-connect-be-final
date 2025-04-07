@@ -13,7 +13,8 @@ router.get("/", async (req, res) => {
         id: userId,
       },
       include: {
-        profile: true
+        profile: true,
+        
       },
     });
 

@@ -38,12 +38,65 @@ router.get("/",async (req,res) => {
                 createdAt: "desc"
             }
         })
-
-        res.status(200).json(alumnis)
+        console.log(alumnis);
+        const structuredAlumniData=alumnis.filter((alumni) => {
+           if(alumni.workExperience && alumni.basic.course){
+            return true
+            } 
+            else{
+            return false
+        }
+        
+    })
+    .map((alumni)=>{
+        return {
+            id: alumni.userId,
+            name: alumni.basic.firstName + " " + (alumni.basic.lastName || ""),
+            jobtitle:  Object.entries(alumni.workExperience)[Object.entries(alumni.workExperience).length-1][1].designation || "" ,
+            company:  Object.entries(alumni.workExperience)[Object.entries(alumni.workExperience).length-1][1].organisation || "" ,
+            course: (alumni.basic.course || "") + " " + (alumni.basic.courseSpecialization || ""),
+            batch: alumni.batch || "",
+            img: alumni.user.profileImage,
+        }
+    })
+        console.log(structuredAlumniData);
+        res.status(200).json(structuredAlumniData)
     } catch (error) {
         res.status(500).json({
             error: error.message,
             message: "Unable to get alumni"
+        })
+    }
+})
+
+
+// get alumni by id 
+router.get("/:id",async (req,res) => {
+    const {id} = req.params
+
+    try {
+        const alumni = await prisma.profile.findUnique({
+            where: {
+                userId: id
+            },
+            include: {
+                user: {
+                    select: {
+                        profileImage: true,
+                        username: true,
+                        email: true,
+                    }
+                }
+            }
+        })
+        const { enrollmentNumber, profileCompletionPercentage, ...other } = alumni;
+
+        res.status(200).json(other)
+    } catch (error) {
+        res.status(500).json({
+            e :error,
+            error: error.message,
+            message: "Unable to get the alumni alumni"
         })
     }
 })
