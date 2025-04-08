@@ -22,6 +22,14 @@ router.get("/pending", async (_, res) => {
         ],
       },
       include: {
+        select: {
+          basic: {
+            firstName: true,
+            lastName: true,
+          },
+          enrollmentNumber: true,
+          batch: true
+        },
         user: {
           select: {
             id: true,
@@ -37,16 +45,16 @@ router.get("/pending", async (_, res) => {
       },
     });
 
-    const resData = data.map((profile) => {
-      return {
-        ...profile,
-        type: profile.user.role,
-      };
-    });
+    // const resData = data.map((profile) => {
+    //   return {
+    //     ...profile,
+    //     type: profile.user.role,
+    //   };
+    // });
 
-    console.log(resData)
+    // console.log(resData)
 
-    res.status(200).json(resData);
+    res.status(200).json(data);
   } catch (error) {
     res
       .status(500)
@@ -169,21 +177,21 @@ router.get("/count", async (_, res) => {
 router.post("/add", async (req, res) => {
   try {
     const {
-        email,
-        isAlumni,
-        enrolmentNumber,
-        batch,
-        firstName,
-        lastName,
-        gender,
-        course,
-        startYear,
-        endYear,
+      email,
+      isAlumni,
+      enrolmentNumber,
+      batch,
+      firstName,
+      lastName,
+      gender,
+      course,
+      startYear,
+      endYear,
     } = req.body;
 
     const alreadyUser = await prisma.user.findFirst({
       where: {
-        email
+        email,
       },
     });
 
@@ -289,13 +297,11 @@ router.delete("/event/delete", async (req, res) => {
       .status(200)
       .json({ event, message: "Event deleted successfully" });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Failed to delete event",
-        error: error.message,
-        e: error,
-      });
+    return res.status(500).json({
+      message: "Failed to delete event",
+      error: error.message,
+      e: error,
+    });
   }
 });
 
@@ -329,13 +335,11 @@ router.patch("/event/edit", async (req, res) => {
       .status(200)
       .json({ event, message: "Event updated successfully" });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Failed to update event",
-        error: error.message,
-        e: error,
-      });
+    return res.status(500).json({
+      message: "Failed to update event",
+      error: error.message,
+      e: error,
+    });
   }
 });
 
@@ -355,13 +359,11 @@ router.post("/crousel", async (req, res) => {
       .status(201)
       .json({ crousel, message: "Crousel added successfully" });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Failed to add crousel",
-        error: error.message,
-        e: error,
-      });
+    return res.status(500).json({
+      message: "Failed to add crousel",
+      error: error.message,
+      e: error,
+    });
   }
 });
 
@@ -376,13 +378,11 @@ router.get("/crousel", async (_, res) => {
       .status(200)
       .json({ crousel, message: "Crousel fetched successfully" });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Failed to get crousel",
-        error: error.message,
-        e: error,
-      });
+    return res.status(500).json({
+      message: "Failed to get crousel",
+      error: error.message,
+      e: error,
+    });
   }
 });
 
@@ -398,13 +398,11 @@ router.delete("/crousel/delete", async (req, res) => {
       .status(200)
       .json({ crousel, message: "Crousel deleted successfully" });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Failed to delete crousel",
-        error: error.message,
-        e: error,
-      });
+    return res.status(500).json({
+      message: "Failed to delete crousel",
+      error: error.message,
+      e: error,
+    });
   }
 });
 
@@ -428,13 +426,11 @@ router.patch("/crousel/edit", async (req, res) => {
       .status(200)
       .json({ crousel, message: "Crousel updated successfully" });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message: "Failed to update crousel",
-        error: error.message,
-        e: error,
-      });
+    return res.status(500).json({
+      message: "Failed to update crousel",
+      error: error.message,
+      e: error,
+    });
   }
 });
 

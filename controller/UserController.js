@@ -39,27 +39,34 @@ export async function handleUserSignupController(req, res) {
 
     const hashedPassword = await hash(password, 12);
 
-    const user = await prisma.user.create({
-      data: {
-        username: username,
-        email: email,
-        password: hashedPassword,
-        role: isAlumni ? "ALUMNI" : "STUDENT",
-      },
-    });
+    const data = await prisma.$transaction(async (prisma) => { 
+        
+        const user =  await prisma.user.create({
+          data: {
+            username: username,
+            email: email,
+            password: hashedPassword,
+            role: isAlumni ? "ALUMNI" : "STUDENT",
+          },
+        });
 
-    await prisma.profile.create({
-      data: {
-        userId: user.id,
-        basic: {
-          firstName,
-          lastName
-        }
-      },
+         await prisma.profile.create({
+          data: {
+            userId: user.id,
+            basic: {
+              firstName,
+              lastName
+            }
+          },
+        });
+        return user;
     })
 
-    setUser(user);
-    res.status(201).json({ message: "User succesfully registered please wait till it gets verified u will be notified via email" });
+    console.log(data);
+
+    const token = setUser(data);
+
+    res.status(201).json({ token,message: "User succesfully registered please wait till it gets verified u will be notified via email" });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -103,7 +110,7 @@ export async function handleUserLoginController(req, res) {
       return res.status(400).json({ message: "Incorrect password" });
     }
     
-    if (user.profile.status !== "ACCEPTED") {
+    if (user.profile.status !== "ACCEPTED" && user.role !== "ADMIN") {
       return res.status(400).json({ message: "Your profile is not accepted yet once it is done an email will be sent to you" });
     }
     const token = setUser(user);
