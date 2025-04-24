@@ -12,43 +12,33 @@ CREATE TABLE "User" (
     "password" TEXT NOT NULL,
     "role" "ROLE" NOT NULL DEFAULT 'STUDENT',
     "profileImage" TEXT NOT NULL DEFAULT 'https://i.ibb.co/QFf9SC8/img-avatar.png',
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "StudentProfile" (
+CREATE TABLE "Profile" (
     "userId" TEXT NOT NULL,
-    "name" TEXT NOT NULL DEFAULT '',
-    "DOB" TEXT NOT NULL DEFAULT '',
-    "course" TEXT NOT NULL DEFAULT '',
-    "enrolmentNumber" TEXT NOT NULL DEFAULT '',
+    "enrollmentNumber" TEXT,
     "skills" TEXT[],
-    "internships" TEXT[],
-    "urls" TEXT[],
-    "batch" TEXT NOT NULL DEFAULT '',
+    "profileCompletionPercentage" TEXT NOT NULL DEFAULT '0',
+    "resume" TEXT,
+    "about" TEXT,
+    "banner" TEXT NOT NULL DEFAULT 'https://static.licdn.com/aero-v1/sc/h/55k1z8997gh8dwtihm11aajyq',
+    "education" JSONB,
+    "basic" JSONB,
+    "accomplishments" JSONB,
+    "personalDetails" JSONB,
+    "socialLinks" JSONB,
+    "workExperience" JSONB,
+    "batch" TEXT,
     "status" "STATUS" NOT NULL DEFAULT 'PENDING',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "StudentProfile_pkey" PRIMARY KEY ("userId")
-);
-
--- CreateTable
-CREATE TABLE "AlumniProfile" (
-    "userId" TEXT NOT NULL,
-    "name" TEXT NOT NULL DEFAULT '',
-    "DOB" TEXT NOT NULL DEFAULT '',
-    "course" TEXT NOT NULL DEFAULT '',
-    "enrolmentNumber" TEXT NOT NULL DEFAULT '',
-    "batch" TEXT NOT NULL DEFAULT '',
-    "jobTitle" TEXT NOT NULL DEFAULT '',
-    "company" TEXT NOT NULL DEFAULT '',
-    "status" "STATUS" NOT NULL DEFAULT 'PENDING',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "AlumniProfile_pkey" PRIMARY KEY ("userId")
+    CONSTRAINT "Profile_pkey" PRIMARY KEY ("userId")
 );
 
 -- CreateTable
@@ -56,14 +46,26 @@ CREATE TABLE "Events" (
     "id" TEXT NOT NULL,
     "title" TEXT,
     "description" TEXT,
-    "time" TEXT,
+    "time" TEXT NOT NULL,
     "location" TEXT,
     "importantLinks" TEXT[],
     "eventImage" TEXT,
     "eventData" TEXT,
-    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Events_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Carousel" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "image" TEXT NOT NULL,
+    "batch" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Carousel_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -94,8 +96,9 @@ CREATE TABLE "Post" (
     "userId" TEXT NOT NULL,
     "likesCount" INTEGER NOT NULL DEFAULT 0,
     "commentCount" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "communityId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
 );
@@ -107,6 +110,7 @@ CREATE TABLE "Comment" (
     "postId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "likesCount" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
 );
@@ -144,16 +148,28 @@ CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "StudentProfile_userId_key" ON "StudentProfile"("userId");
+CREATE UNIQUE INDEX "Profile_userId_key" ON "Profile"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "AlumniProfile_userId_key" ON "AlumniProfile"("userId");
+CREATE INDEX "Profile_userId_status_idx" ON "Profile"("userId", "status");
 
 -- CreateIndex
 CREATE INDEX "Connection_senderId_receiverId_idx" ON "Connection"("senderId", "receiverId");
 
 -- CreateIndex
+CREATE INDEX "Connection_senderId_status_idx" ON "Connection"("senderId", "status");
+
+-- CreateIndex
+CREATE INDEX "Connection_receiverId_status_idx" ON "Connection"("receiverId", "status");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Connection_senderId_receiverId_key" ON "Connection"("senderId", "receiverId");
+
+-- CreateIndex
+CREATE INDEX "Post_createdAt_idx" ON "Post"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "Comment_createdAt_idx" ON "Comment"("createdAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PostLike_userId_postId_key" ON "PostLike"("userId", "postId");
@@ -165,40 +181,37 @@ CREATE UNIQUE INDEX "CommentLike_userId_commentId_key" ON "CommentLike"("userId"
 CREATE INDEX "_CommunityMembers_B_index" ON "_CommunityMembers"("B");
 
 -- AddForeignKey
-ALTER TABLE "StudentProfile" ADD CONSTRAINT "StudentProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Profile" ADD CONSTRAINT "Profile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AlumniProfile" ADD CONSTRAINT "AlumniProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Connection" ADD CONSTRAINT "Connection_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Connection" ADD CONSTRAINT "Connection_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Connection" ADD CONSTRAINT "Connection_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Connection" ADD CONSTRAINT "Connection_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Post" ADD CONSTRAINT "Post_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Post" ADD CONSTRAINT "Post_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Post" ADD CONSTRAINT "Post_communityId_fkey" FOREIGN KEY ("communityId") REFERENCES "Community"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PostLike" ADD CONSTRAINT "PostLike_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PostLike" ADD CONSTRAINT "PostLike_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PostLike" ADD CONSTRAINT "PostLike_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PostLike" ADD CONSTRAINT "PostLike_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "CommentLike" ADD CONSTRAINT "CommentLike_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "CommentLike" ADD CONSTRAINT "CommentLike_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "CommentLike" ADD CONSTRAINT "CommentLike_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "CommentLike" ADD CONSTRAINT "CommentLike_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_CommunityMembers" ADD CONSTRAINT "_CommunityMembers_A_fkey" FOREIGN KEY ("A") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;

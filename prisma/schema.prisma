@@ -59,7 +59,7 @@ model Profile {
   accomplishments             Json?
   personalDetails             Json?
   socialLinks                 Json?
-  workExperience              Json?
+  workExperience              workExperience[] 
   batch                       String?
   status                      STATUS   @default(PENDING)
   user                        User     @relation(fields: [userId], references: [id] , onDelete: Cascade)
@@ -68,8 +68,23 @@ model Profile {
 
   @@index([userId,status])
 }
+model workExperience {
+  workId            String  @id
+  userId            String  
+  remote            Boolean
+  skills            String[]
+  startDate         String?
+  endDate           String?
+  location          String?
+  description       String?
+  designation       String?
+  organisation      String?
+  employmentType    String?
+  currentlyWorking  Boolean?
+  createdAt         DateTime @default(now())
+  profile           Profile? @relation(fields:[userId],references:[userId])
+}
 
-  
 model Events {
   id             String   @id @default(uuid())
   title          String?
