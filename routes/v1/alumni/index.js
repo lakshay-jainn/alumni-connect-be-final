@@ -65,7 +65,7 @@ router.get("/search",async (req,res) =>{
       OFFSET ${skip}
       LIMIT  ${take};
     `
-console.log(alumnis);
+
 const structuredAlumniData = alumnis
 .filter((alumni) => {
   if (alumni.workExperience.length>0 && alumni.basic.course) {
@@ -77,17 +77,12 @@ const structuredAlumniData = alumnis
 .map((alumni) => {
   return {
     id: alumni.userId,
-    name: alumni.basic.firstName + " " + (alumni.basic.lastName || ""),
-    jobtitle:
-      alumni.workExperience[0].designation || "",
-    company:
-      alumni.workExperience[0].organisation || "",
-    course:
-      (alumni.basic.course || "") +
-      " " +
-      (alumni.basic.courseSpecialization || ""),
+    name: (alumni.basic.firstName || "" ) + "" + (alumni.basic.lastName || ""),
+    jobtitle: alumni.workExperience[0].designation || "",
+    company: alumni.workExperience[0].organisation || "",
+    course: (alumni.basic.course || "") + "" + (alumni.basic.courseSpecialization || ""),
     batch: alumni.batch || "",
-    img: alumni.user.profileImage,
+    img: alumni.user.profileImage + "",
   };
 });
 console.log(structuredAlumniData);
@@ -135,29 +130,24 @@ router.get("/", async (req, res) => {
         createdAt: "desc",
       },
     });
-    console.log(alumnis)
+    
     const structuredAlumniData = alumnis
       .filter((alumni) => {
         if (alumni.workExperience.length>0 && alumni.basic.course) {
           return true;
         } else {
-          return false;
+          return true;
         }
       })
       .map((alumni) => {
         return {
           id: alumni.userId,
-          name: alumni.basic.firstName + " " + (alumni.basic.lastName || ""),
-          jobtitle:
-            alumni.workExperience[0].designation || "",
-          company:
-            alumni.workExperience[0].organisation || "",
-          course:
-            (alumni.basic.course || "") +
-            " " +
-            (alumni.basic.courseSpecialization || ""),
+          name: (alumni.basic.firstName || "" ) + "" + (alumni.basic.lastName || ""),
+          jobtitle: alumni.workExperience[0].designation || "",
+          company: alumni.workExperience[0].organisation || "",
+          course: (alumni.basic.course || "") + "" + (alumni.basic.courseSpecialization || ""),
           batch: alumni.batch || "",
-          img: alumni.user.profileImage,
+          img: alumni.user.profileImage + "",
         };
       });
     console.log(structuredAlumniData);
