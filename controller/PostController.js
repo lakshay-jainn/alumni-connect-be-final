@@ -1,3 +1,4 @@
+import { createNotif } from "../services/notifService.js";
 import {
   createComment,
   createPost,
@@ -53,6 +54,11 @@ export async function getPostbyIdController(req,res) {
           select: {
             username: true,
             profileImage: true,
+            profile:{
+              select:{
+                basic:true
+              }
+            }
           },
         },
       },
@@ -78,14 +84,31 @@ export async function getPostbyIdController(req,res) {
 }
 
 export async function likeDislikePostController(req, res) {
-  const userId = req.user.id;
+  const likerId = req.user.id;
   const { postId } = req.body;
-
   try {
-    const like = await likeDislikePost(userId, postId);
-
-    return res.status(200).json(like);
+    const like = await likeDislikePost(likerId, postId);
+    
+    const userProfile = await prisma.profile.findUnique({
+      where:{userId:likerId},
+      select:{
+        basic:true,
+        user:{
+          select:{
+            profileImage:true
+          }
+        }
+      }
+    })
+    
+    if (like.isLiked){
+      const name  = userProfile.basic.firstName + " " +(userProfile.basic.lastName ? userProfile.basic.lastName : "");
+      createNotif(like.postUserId,name,"liked your post","",userProfile.user.profileImage,`/feed/${postId}`);
+      // if (!notif) return res.status(500).json({error:"notification failed"}) ;
+    }
+    res.status(200).json(like);
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       error: error.message,
       message: "Like failed try again later",
@@ -124,6 +147,7 @@ export async function createCommentController(req, res) {
 
   try {
     const comment = await createComment(userId, postId, content);
+    createNotif(like.postUserId,name,"liked your post","",userProfile.user.profileImage,`/feed/${postId}`);
     res.status(200).json({
       comment,
     });

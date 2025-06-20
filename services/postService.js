@@ -22,6 +22,11 @@ export async function getPosts(userId, skip = 0, take = 15) {
         select: {
           username: true,
           profileImage: true,
+          profile:{
+            select:{
+              basic:true
+            }
+          }
         },
       },
       likes: {
@@ -102,7 +107,7 @@ export async function likeDislikePost(userId, postId) {
       data: { userId, postId }
     });
 
-    await prisma.post.update({
+    const post = await prisma.post.update({
       where: {
         id: postId
       },
@@ -112,8 +117,8 @@ export async function likeDislikePost(userId, postId) {
         }
       }
     })
-
-    return { isLiked: true };
+    console.log("phuck you nigga",post);
+    return { isLiked: true ,postUserId:post.userId};
   }
 );
 }

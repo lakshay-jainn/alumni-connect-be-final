@@ -150,7 +150,7 @@ router.get("/", async (req, res) => {
           img: alumni.user.profileImage + "",
         };
       });
-    console.log(structuredAlumniData);
+   
     res.status(200).json(structuredAlumniData);
   } catch (error) {
     res.status(500).json({
@@ -162,8 +162,24 @@ router.get("/", async (req, res) => {
 
 // get alumni by id
 router.get("/:id", async (req, res) => {
-  const { id } = req.params;
 
+  const userId = req.user.id;
+  const { id } = req.params;
+  let connection = await prisma.connection.findUnique({
+      where:{
+        senderId_receiverId: {
+          senderId: userId,
+          receiverId:id
+        }
+      },
+      select:{
+        status:true,
+      }
+    })
+
+  if(!connection || connection.status == "REJECTED"){
+      connection = {status:"CONNECT"}
+  }
   try {
     const alumni = await prisma.profile.findUnique({
       where: {
@@ -184,10 +200,12 @@ router.get("/:id", async (req, res) => {
         }
       },
     });
+
     const { enrollmentNumber, profileCompletionPercentage, ...other } = alumni;
 
-    res.status(200).json(other);
+    res.status(200).json({...other,connectionStatus:connection.status});
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       e: error,
       error: error.message,

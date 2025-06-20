@@ -3,7 +3,7 @@ import { generateResetToken, setUser, verifyResetToken } from "../services/jwt.j
 import { compare, hash } from "bcrypt";
 import { sendEmail } from "../services/email.js";
 import { signUpSchema,signInSchema,forgetPasswordSchema, resetPasswordSchema} from "../config/zodSchema.js";
-
+import { createNotif } from "../services/notifService.js";
 export async function handleUserSignupController(req, res) {
   try {
 
@@ -114,8 +114,9 @@ export async function handleUserLoginController(req, res) {
       return res.status(400).json({ message: "Your profile is not accepted yet once it is done an email will be sent to you" });
     }
     const token = setUser(user);
-
+    createNotif(user.id,"Admin","would like to","Welcome you to Alumni Connect",user.profileImage);
     res.status(200).json({ token });
+
   } catch (error) {
     res.status(500).json({ message: "Something went wrong from our side" , error: error.message});
   }

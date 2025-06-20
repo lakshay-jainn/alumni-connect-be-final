@@ -40,7 +40,7 @@ model User {
   postLikes                  PostLike[]
   commentLikes               CommentLike[]
   comments                   Comment[]
-
+  notifications              Notification[]
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
@@ -124,8 +124,8 @@ model Connection {
 
 model Community {
   id          String @id @default(uuid())
-  name        String
-  description String
+  name        String @unique
+  description String 
   posts       Post[]
   members     User[] @relation("CommunityMembers")
 }
@@ -181,4 +181,17 @@ model CommentLike {
   Comment   Comment @relation(fields: [commentId], references: [id],onDelete: Cascade)
 
   @@unique([userId, commentId])
+}
+model Notification {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  name        String
+  action      String   
+  description String   
+  logo        String
+  url         String?  
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  @@unique([id,userId])
 }

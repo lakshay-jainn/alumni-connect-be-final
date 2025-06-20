@@ -16,6 +16,7 @@ export async function sendConnectionRequestController(req, res) {
       connectionRequest,
     });
   } catch (e) {
+    console.log(e);
     return res.status(500).json({
       message: "Failed to send connection",
     });
@@ -26,8 +27,10 @@ export async function getPendingConnectionRequestsController(req, res) {
   const userId = req.user.id;
 
   try {
-    const pendingRequest = await getPendingConneectionRequests(userId);
-    return res.status(200).json({ pendingRequest });
+    const pending = await getPendingConneectionRequests(userId);
+    const incoming = pending.filter((user)=>user.receiverId==userId);
+    const outgoing = pending.filter((user)=>user.senderId==userId);
+    return res.status(200).json({ pendingRequest:{incoming,outgoing} });
   } catch (e) {
     res.status(500).json({ message: "Failed to fetch pending requests" });
   }
@@ -48,6 +51,7 @@ export async function respondToConnectionRequestController(req, res) {
       updatedRequest,
     });
   } catch (e) {
+    console.log(e);
     return res.status(500).json({
       message: "Failed to respond",
     });
@@ -59,8 +63,9 @@ export async function getConnectionsController(req,res) {
 
   try {
     const connections = await getConnections(userId)
-
-    return res.status(200).json({connections})
+    const followers = connections.filter((connection)=>connection.receiverId==userId)
+    const following = connections.filter((connection)=>connection.senderId==userId)
+    return res.status(200).json({followers,following})
   }catch(e) {
     res.status(500).json({message: "Failed to get connections"})
   }
