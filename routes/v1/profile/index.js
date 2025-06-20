@@ -13,7 +13,15 @@ router.get("/", async (req, res) => {
         id: userId,
       },
       include: {
-        profile: true,
+        profile: {
+          include:{
+            workExperience:{
+              orderBy: {
+                createdAt: 'desc', // 👈 Order by startDate descending
+              },
+            }
+          }
+        },
         
       },
     });
@@ -93,14 +101,14 @@ router.post("/", async (req, res) => {
     const profile = "profile";
 
     const jsonFields = [
+      
       "basic",
       "education",
       "accomplishments",
       "personalDetails",
       "socialLinks",
-      "workExperience",
+      // "workExperience",
     ];
-
     const regularFields = [
       'enrollmentNumber', 'skills', 'profileCompletionPercentage',
       'resume', 'about', 'banner', 'urls', 'batch', 'status'
@@ -136,6 +144,29 @@ router.post("/", async (req, res) => {
         };
       }
     });
+
+    console.log(filteredUpdates.workExperience);
+    if (filteredUpdates.workExperience){
+      const upsertPromises = Object.entries(filteredUpdates.workExperience).map(async ([workId, data]) => {
+        return prisma.workExperience.upsert({
+          where: { workId },
+          update: {
+            ...data,
+            userId, 
+          },
+          create: {
+            workId,
+            userId,
+            ...data,
+          },
+        });
+      });
+      
+      await Promise.all(upsertPromises);
+
+    }
+    
+     
 
     const updatedUser = await prisma[profile].update({
       where: { userId },

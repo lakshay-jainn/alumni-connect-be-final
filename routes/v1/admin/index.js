@@ -21,15 +21,12 @@ router.get("/pending", async (_, res) => {
           },
         ],
       },
-      include: {
-        select: {
-          basic: {
-            firstName: true,
-            lastName: true,
-          },
-          enrollmentNumber: true,
-          batch: true
-        },
+      select:{
+        basic: true,
+        enrollmentNumber: true,
+        batch: true,
+        status:true,
+        userId:true,
         user: {
           select: {
             id: true,
@@ -40,6 +37,7 @@ router.get("/pending", async (_, res) => {
           },
         },
       },
+
       orderBy: {
         createdAt: "desc",
       },
@@ -53,9 +51,10 @@ router.get("/pending", async (_, res) => {
     // });
 
     // console.log(resData)
-
+    
     res.status(200).json(data);
   } catch (error) {
+    console.log(error.message);
     res
       .status(500)
       .json({ message: "Falied unexpectdly", error: error.message, e: error });
@@ -65,7 +64,7 @@ router.get("/pending", async (_, res) => {
 router.post("/action", async (req, res) => {
   try {
     const { action, userId } = req.body;
-
+    console.log(action,userId);
     if (!["ACCEPTED", "REJECTED"].includes(action)) {
       return res.status(400).json({ message: "Action not allowed" });
     }
@@ -75,22 +74,22 @@ router.post("/action", async (req, res) => {
       data: {
         status: action,
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            profileImage: true,
-            email: true,
-          },
-        },
-      },
+      // include: {
+      //   user: {
+      //     select: {
+      //       id: true,
+      //       username: true,
+      //       profileImage: true,
+      //       email: true,
+      //     },
+      //   },
+      // },
     });
     return res
       .status(201)
       .json({ update, message: "Action Performed successfully" });
   } catch (error) {
-    return res.status(500).json({ message: `FAiled ${action}` });
+    return res.status(500).json({ message: `FAiled  ` });
   }
 });
 
@@ -139,7 +138,10 @@ router.get("/count", async (_, res) => {
   try {
     const studentCount = await prisma.profile.count({
       where: {
-        role: "STUDENT",
+        user:{
+          role: "STUDENT",
+        }
+        ,
         status: {
           in: ["ACCEPTED"],
         },
@@ -148,7 +150,10 @@ router.get("/count", async (_, res) => {
 
     const alumniCount = await prisma.profile.count({
       where: {
-        role: "ALUMNI",
+        user:{
+          role: "ALUMNI",
+        }
+        ,
         status: {
           in: ["ACCEPTED"],
         },
@@ -157,12 +162,14 @@ router.get("/count", async (_, res) => {
 
     const pendings = await prisma.profile.count({
       where: {
-        role: {
-          in: ["STUDENT", "ALUMNI"],
+        user:{
+          role:{
+            in: ["STUDENT", "ALUMNI"],
+          }
         },
         status: "PENDING",
       },
-    });
+    }); 
 
     return res.status(200).json({
       pendingRequests: pendings,
