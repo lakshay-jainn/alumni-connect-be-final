@@ -62,10 +62,9 @@ export async function getConnectionsController(req,res) {
   const userId = req.user.id
 
   try {
-    const connections = await getConnections(userId)
-    const followers = connections.filter((connection)=>connection.receiverId==userId)
-    const following = connections.filter((connection)=>connection.senderId==userId)
-    return res.status(200).json({followers,following})
+    const {followers,followings} = await getConnections(userId)
+
+    return res.status(200).json({followers,followings})
   }catch(e) {
     res.status(500).json({message: "Failed to get connections"})
   }

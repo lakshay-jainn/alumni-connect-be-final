@@ -1,12 +1,31 @@
 import { Router } from "express";
 import { prisma } from "../../../libs/prisma.js";
+import { getConnections } from "../../../utils/connection.js";
+import { createNotif } from "../../../services/notifService.js";
 const router = Router();
 
 //Get all communities
 router.get("/communities", async (req, res) => {
+  const role = req.user.role;
+  const {forPosting} = req.query;
+ 
+  let whereClause = {};
+  if(forPosting){
+    whereClause.role = {
+      has:role,
+    }
+  }
+
+
   try {
-    const communities = await prisma.community.findMany();
-    res.json(communities);
+      const communities = await prisma.community.findMany({
+        where:whereClause,
+    });
+
+      const reordered = communities.sort((a, b) => {
+        return a.name === "Connections" ? -1 : b.name === "Connections" ? 1 : 0;
+      });
+    res.json(reordered);
   } catch (e) {
     res.status(500).json({ error: "Something went wrong" });
   }
@@ -72,8 +91,26 @@ router.get("/:id/posts" ,async (req, res) => {
 //Create a community with a post
 router.post("/post", async (req, res) => {
   const userId = req.user.id;
+  const role = req.user.role;
+  console.log(role);
   const { communityId, content, caption } = req.body;
-
+  let postData ={}
+  try {
+    const community = await prisma.community.findUnique({
+      where:{
+        id:communityId
+      }
+    });
+    if (!community.role.includes(role)){
+      throw Error("Cant post in this community")
+    }
+  } catch (e) {
+    
+    return res.status(500).json({
+      message: e.message,
+    });
+  }
+  
   try {
     const post = await prisma.post.create({
       data: {
@@ -82,18 +119,49 @@ router.post("/post", async (req, res) => {
         userId,
         communityId,
       },
+      include:{
+        user:{
+          select:{
+            profileImage:true,
+            profile:{
+              select:{
+                basic:true,
+              }
+              
+            }
+          }
+        }
+      }
     });
+    postData = post;
 
     res.status(200).json({
       message: "Post created successfully",
       post,
     });
   } catch (e) {
+    console.log(e);
     return res.status(500).json({
       message: "Failed to create post",
     });
   }
-});
+  console.log(postData);
+  try{
+    const {followers,followings} = await getConnections(userId);
+    const connectionIds = [... new Set([...followers.map(follower => follower.senderId),...followings.map(following => following.receiverId)])]
+    
+    const name = postData.user.profile.basic.firstName+(postData.user.profile.basic.lastName ?? "")
+    const notifDesc = caption ? (caption.slice(0,Math.min(caption.length+1,40))+(caption.length>40 ? "...":"")) : "";
+    console.log(postData);
+    createNotif(connectionIds,name,"has posted",notifDesc,postData.user.profileImage,`/feed/${postData.id}`)
+  }catch(e){
+    console.log(e);
+    // return res.status(500).json({
+    //   message: "Failed to send notification",
+    // })
+  }
+}
+);
 
 // join a community
 router.post("/:communityId/join", async (req, res) => {

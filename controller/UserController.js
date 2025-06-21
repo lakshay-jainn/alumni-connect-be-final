@@ -114,7 +114,7 @@ export async function handleUserLoginController(req, res) {
       return res.status(400).json({ message: "Your profile is not accepted yet once it is done an email will be sent to you" });
     }
     const token = setUser(user);
-    createNotif(user.id,"Admin","would like to","Welcome you to Alumni Connect",user.profileImage);
+    createNotif([user.id],"Admin","would like to","Welcome you to Alumni Connect",user.profileImage);
     res.status(200).json({ token });
 
   } catch (error) {

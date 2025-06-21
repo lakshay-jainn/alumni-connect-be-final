@@ -126,6 +126,7 @@ model Community {
   id          String @id @default(uuid())
   name        String @unique
   description String 
+  role        ROLE[]
   posts       Post[]
   members     User[] @relation("CommunityMembers")
 }

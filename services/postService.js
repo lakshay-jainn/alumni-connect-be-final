@@ -13,11 +13,35 @@ export async function createPost(userId, content, caption) {
   });
 }
 
-export async function getPosts(userId, skip = 0, take = 15) {
+export async function getPosts(userId, skip = 0, take = 15,communities,connectionIds) {
+  let whereClause = {};
+  communities = communities.split(",");
+  if(communities[0]!=""){
+    whereClause.Community ={
+        name:{
+          in:communities,
+        }
+      }
+    
+  }
+  if (connectionIds){
+    whereClause.userId = {
+      in: connectionIds,
+    }
+  }
+  console.log(whereClause);
   const posts = await prisma.post.findMany({
+    where: whereClause,
     skip,
     take,
     include: {
+
+      Community:{
+              select:{
+                name:true,
+                description:true,
+              }
+            },
       user: {
         select: {
           username: true,
@@ -140,7 +164,7 @@ export async function createComment(userId, postId, content) {
       },
     },
   });
-  await prisma.post.update({
+  const post = await prisma.post.update({
     where: {
       id: postId
     },
@@ -148,9 +172,22 @@ export async function createComment(userId, postId, content) {
       commentCount: {
         increment: 1
       }
+    },
+    include:{
+      user:{
+        select:{
+          profileImage:true,
+          profile:{
+            select:{
+              basic:true,
+            }
+          }
+        }
+      }
     }
   })
-  return comment;
+  console.log(post);
+  return {comment,post};
 }
 
 export async function getComments(userId, postId, skip = 0, take = 3) {

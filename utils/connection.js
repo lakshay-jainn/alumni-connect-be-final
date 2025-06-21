@@ -57,7 +57,7 @@ export async function respondToConnectionRequest(connectionId, status) {
 
 
 export async function getConnections(userId) {
-  return await prisma.connection.findMany({
+  const connections = await prisma.connection.findMany({
     where: {
       OR: [
         { senderId: userId, status: "ACCEPTED" },
@@ -81,6 +81,9 @@ export async function getConnections(userId) {
       },
     },
   });
+    const followers = connections.filter((connection)=>connection.receiverId==userId) ?? []
+    const followings = connections.filter((connection)=>connection.senderId==userId) ?? []
+    return {followers,followings}
 }
 
 export async function removeConnection(connectionId) {
