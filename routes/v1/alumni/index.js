@@ -130,13 +130,14 @@ router.get("/", async (req, res) => {
         createdAt: "desc",
       },
     });
+    // console.log(alumnis);
     
     const structuredAlumniData = alumnis
       .filter((alumni) => {
         if (alumni.workExperience.length>0 && alumni.basic.course) {
           return true;
         } else {
-          return true;
+          return false;
         }
       })
       .map((alumni) => {
@@ -153,6 +154,7 @@ router.get("/", async (req, res) => {
    
     res.status(200).json(structuredAlumniData);
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       error: error.message,
       message: "Unable to get alumni",
