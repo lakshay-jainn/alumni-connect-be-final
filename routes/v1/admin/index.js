@@ -441,4 +441,29 @@ router.patch("/crousel/edit", async (req, res) => {
   }
 });
 
+
+router.post("/create-community",async (req,res) => {
+  try{
+    const {name,description} = req.body;
+
+    const community = await prisma.community.create({
+      data:{
+        name,
+        description
+      }
+    })
+    return res
+    .status(201)
+    .json({ community, message: "community added successfully" });
+
+  }
+  catch(error){
+    return res.status(500).json({
+      message: "Failed to add community",
+      error: error.message,
+      e: error,
+    });
+  }
+})
+
 export default router;

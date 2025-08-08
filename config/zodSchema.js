@@ -128,8 +128,9 @@ export const baseProfileSchema = z
             .optional(),
           rollNumber: z
             .string()
-            .regex(/^\d+$/, "Only numbers are allowed")
-            .nonempty("roll number can not be empty")
+            
+            
+            // .nonempty("roll number can not be empty")
             .optional(),
           specialization: z
             .string()
