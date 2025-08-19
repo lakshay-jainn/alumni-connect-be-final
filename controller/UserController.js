@@ -12,7 +12,7 @@ export async function handleUserSignupController(req, res) {
 
     const validatedBody = signUpSchema.parse(req.body);
 
-    const { username, email, password, isAlumni,firstName, lastName } = validatedBody;
+    const { username, email, password, isAlumni,firstName, lastName,startYear,rollNumber } = validatedBody;
 
     const exsistingUserByEmail = await prisma.user.findUnique({
       where: {
@@ -43,6 +43,7 @@ export async function handleUserSignupController(req, res) {
         
         const user =  await prisma.user.create({
           data: {
+            rollNumber: rollNumber,
             username: username,
             email: email,
             password: hashedPassword,
@@ -52,7 +53,10 @@ export async function handleUserSignupController(req, res) {
 
          await prisma.profile.create({
           data: {
+            
             userId: user.id,
+            
+            batch:startYear,
             basic: {
               firstName,
               lastName

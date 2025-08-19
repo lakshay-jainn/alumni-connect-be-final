@@ -17,6 +17,8 @@ export const signUpSchema = z.object({
     .min(5, { message: "Password must be atleast 5 character" })
     .max(20, { message: "Password must be less than 20 character" }),
   isAlumni: z.boolean().optional(),
+  startYear: z.string().nonempty("Grad year is required"),
+  rollNumber: z.string().nonempty("rollNumber is mandatory bro"),
   firstName: z
     .string()
     .regex(/^[A-Za-z\s]+$/, "Only plain text (letters and spaces) is allowed")
