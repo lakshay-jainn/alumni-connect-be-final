@@ -31,6 +31,7 @@ model User {
   email                      String          @unique
   password                   String
   role                       ROLE            @default(STUDENT)
+  rollNumber                 String?
   profileImage               String          @default("https://i.ibb.co/QFf9SC8/img-avatar.png")
   profile                    Profile?        // 101 with alumni profile
   sentConnectionRequests     Connection[]    @relation("SentConnections")
@@ -60,8 +61,8 @@ model Profile {
   personalDetails             Json?
   socialLinks                 Json?
   workExperience              workExperience[] 
-  batch                       String?
   status                      STATUS   @default(PENDING)
+  batch                       String?
   user                        User     @relation(fields: [userId], references: [id] , onDelete: Cascade)
   createdAt                   DateTime @default(now())
   updatedAt                   DateTime @default(now()) @updatedAt

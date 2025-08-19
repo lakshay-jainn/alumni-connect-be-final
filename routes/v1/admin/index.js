@@ -102,6 +102,7 @@ router.get("/history", async (_, res) => {
         },
       },
       include: {
+        
         user: {
           select: {
             id: true,
@@ -109,6 +110,7 @@ router.get("/history", async (_, res) => {
             profileImage: true,
             email: true,
             role: true,
+            rollNumber:true,
           },
         },
       },
