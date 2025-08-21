@@ -34,6 +34,7 @@ router.get("/pending", async (_, res) => {
             profileImage: true,
             email: true,
             role: true,
+            rollNumber:true
           },
         },
       },
