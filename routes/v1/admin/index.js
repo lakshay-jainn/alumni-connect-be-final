@@ -1,12 +1,79 @@
 import { Router } from "express";
-
 import { prisma } from "../../../libs/prisma.js";
+import multer from "multer";
+import Papa from 'papaparse';
+// import { hash } from "bcrypt"; bro baad mei karna hai ye 
+
+// store file in memory (you could also use diskStorage)
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
 router.get("/", (_, res) => {
   return res.json({ message: "welcome admin" });
 });
+router.post("/create-bulk-users",upload.single("csvFile"),async (req,res) => {
+  const file = req.file;
+  const fileString = req.file.buffer.toString("utf8")
+  const users = Papa.parse(fileString, {
+  skipEmptyLines: true,
+  header:true
+  });
+
+  const data = users.data.map(user => {
+    const role = user["role"].toUpperCase();
+    if (role === "ADMIN"){
+      return res.json({message:"admin not allowed"})
+    }
+    return {
+    username: user["roll number"],
+    email: user["email"],
+    role: role,
+    rollNumber: user["roll number"],
+    password: user["roll number"],
+  }
+});
+
+
+const rnhashmap = users.data.reduce((acc, user, idx) => {
+    acc[user["roll number"]] = {
+      batch: user["admission year"],
+      firstName: user["first name"],
+      lastName: user["last name"],
+    };
+    return acc;
+  }, {});
+
+
+  try{
+    await prisma.$transaction(async (tx) =>{
+      const reswan = await tx.user.createManyAndReturn({
+      data,
+    })
+      const profileData = reswan.map((user)=>({
+        userId: user.id,
+        status: "ACCEPTED",
+        batch: rnhashmap[user.rollNumber].batch,
+        basic: {
+          firstName: rnhashmap[user.rollNumber].firstName,
+          lastName: rnhashmap[user.rollNumber].lastName
+        }
+
+      }))
+      await tx.profile.createMany({
+        data: profileData
+      })
+    })
+
+  }
+  catch(error){
+    console.error(error);
+  }
+
+
+
+
+})
 
 router.get("/pending", async (_, res) => {
   try {
